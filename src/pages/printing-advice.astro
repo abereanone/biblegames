@@ -1,0 +1,60 @@
+---
+import Main from "@/layouts/Main.astro";
+---
+
+<Main title="Printing Advice | Bible Games">
+  <section class="panel info-page info-page-dark">
+    <h1 class="title">Printing Advice</h1>
+
+    <p>
+      Most puzzles are designed to fit on one page, but some verses are longer and may need a quick print adjustment.
+    </p>
+
+    <p>
+      If your print preview spills to a second page, first try switching orientation:
+    </p>
+
+    <p>
+      Portrait works best for Word Search and Verse Unscramble.
+      <br />
+      Landscape works best for Cryptogram.
+    </p>
+
+    <p>
+      You can also use your browser print dialog scaling settings:
+    </p>
+
+    <p>
+      Open Print, then lower scale a little (for example from 100% to 95% or 90%) until everything fits on one page.
+    </p>
+
+    <p>
+      If needed, reduce margins in the print dialog as well.
+    </p>
+
+    <p><a href="/">Click here to go back to the games</a></p>
+  </section>
+
+  <style>
+    .info-page {
+      font-size: 1.1rem;
+      line-height: 1.65;
+    }
+
+    .info-page-dark {
+      background: linear-gradient(180deg, #103f36 0%, #0d342d 100%);
+      border-color: #123a30;
+      color: #e9f6f1;
+    }
+
+    .info-page-dark .title,
+    .info-page-dark .subtitle {
+      color: #f0fffa;
+    }
+
+    .info-page p {
+      margin-top: 0.9rem;
+      margin-bottom: 0.9rem;
+    }
+  </style>
+</Main>

@@ -717,12 +717,27 @@ button,
   .cryptogram-print-layout {
     display: flex;
     flex-direction: column;
-    min-height: calc(8.5in - 0.8in);
+    min-height: 0;
   }
 
   .cryptogram-print-layout .print-bottom-block {
-    margin-top: auto;
-    padding-top: 0.35in;
+    margin-top: 0.16in;
+    padding-top: 0;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .theme-cryptogram .print-credit {
+    margin: 0.22in 0 0;
+    font-size: 10pt;
+  }
+
+  .theme-cryptogram .answer-upside {
+    margin: 0.06in 0 0;
+    font-size: 0.6rem;
+    line-height: 1.2;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .theme-verse-unscramble .solve-line {
