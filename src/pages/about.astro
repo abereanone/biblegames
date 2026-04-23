@@ -3,21 +3,158 @@ import Main from "@/layouts/Main.astro";
 ---
 
 <Main title="About | Bible Games">
-  <section class="panel">
+  <section class="panel info-page info-page-dark">
     <h1 class="title">About Bible Games</h1>
 
     <p>
-      Bible Games helps kids and families turn scripture chapters into printable activities that are simple to use at
-      home, church, and school.
+      BibleGames.Church exists to help families, churches, and schools enjoy Scripture together through simple printable activities.
     </p>
 
     <p>
-      Current games include chapter-based word searches and verse cryptograms. We plan to keep adding more printable
-      game types over time.
+      Bible text on this site comes from a local copy of the Berean Standard Bible (BSB), with a few small modifications for display.
     </p>
 
     <p>
-      Bible text displayed on this site comes from a local copy of the Berean Standard Bible (BSB).
+      We plan to keep adding more printable game types over time. If you have an idea, we would love to hear it.
     </p>
+
+    <p>
+      This is a father/son project we built because we wanted something useful for Christ's Church and for our own family. If you want to encourage us or support us (never required), you can contact me at abereanone (at) pm (dot) me.
+      My name is Michael Coughlin. I am a Reformed Baptist from Ohio. You may also enjoy
+      <a href="https://catechize.ing" target="_blank" rel="noopener noreferrer">catechize.ing</a>
+      and
+      <a href="https://usa.catechize.ing" target="_blank" rel="noopener noreferrer">usa.catechize.ing</a>.
+    </p>
+
+    <p>
+      BibleGames.Church displays a modified BSB text when you hover over or tap verse links. This text is served from our local BSB data and uses the covenant name Yahweh in place of LORD.
+    </p>
+
+    <p>
+      Contact us via email at abereanone (at) pm (dot) me.
+    </p>
+    <p>
+      Donations are never required, but if you want to co-labor with us we will use all the funds for God's
+      glory. We use a secure payment processor called
+      <a
+        href="https://www.zeffy.com/en-US/referral?referredByOrganizationId=4c5e3aa2-763d-407c-973c-19e522a3f5c1"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Zeffy
+      </a>
+      that does not charge fees to non-profits. You will be prompted to donate to Zeffy as well when you complete your payment. This is optional.
+    </p>
+    <div
+      data-donation-form-root
+      style="margin-top:2rem;padding:1.25rem;border:1px solid var(--card-border);border-radius:18px;background:var(--card-bg);box-shadow:var(--shadow-card);"
+    >
+      <p style="margin-top:0;">
+        The donation form is loaded only when requested to keep third-party content from running by default.
+      </p>
+      <button
+        type="button"
+        data-donation-form-trigger
+        style="display:inline-flex;align-items:center;justify-content:center;padding:0.85rem 1.4rem;border:1px solid #86d9c2;border-radius:999px;background:#86d9c2;color:#10332a;font:inherit;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(134,217,194,0.35);"
+      >
+        Show donation form
+      </button>
+      <div
+        data-donation-form-container
+        hidden
+        style="position:relative;overflow:hidden;height:450px;width:100%;margin-top:1.5rem;border-radius:14px;"
+      ></div>
+    </div>
   </section>
+
+  <style>
+    .info-page {
+      font-size: 1.1rem;
+      line-height: 1.65;
+    }
+
+    .info-page-dark {
+      background: linear-gradient(180deg, #103f36 0%, #0d342d 100%);
+      border-color: #123a30;
+      color: #e9f6f1;
+    }
+
+    .info-page-dark .title,
+    .info-page-dark .subtitle {
+      color: #f0fffa;
+    }
+
+    .info-page p {
+      margin-top: 0.9rem;
+      margin-bottom: 0.9rem;
+    }
+
+    .info-page a {
+      font-weight: 700;
+      color: #9de7cf;
+    }
+
+    .info-page a:visited {
+      color: #9de7cf;
+    }
+
+    .info-page a:hover,
+    .info-page a:focus-visible {
+      color: #c5ffec;
+    }
+  </style>
+
+  <script is:inline>
+    (() => {
+      const initDonationForm = () => {
+        const root = document.querySelector("[data-donation-form-root]");
+        const trigger = document.querySelector("[data-donation-form-trigger]");
+        const container = document.querySelector("[data-donation-form-container]");
+
+        if (!(root instanceof HTMLElement) || !(trigger instanceof HTMLButtonElement) || !(container instanceof HTMLElement)) {
+          return;
+        }
+
+        let loaded = false;
+
+        trigger.addEventListener("click", () => {
+          if (loaded) {
+            container.hidden = false;
+            container.scrollIntoView({ behavior: "smooth", block: "start" });
+            return;
+          }
+
+          const iframe = document.createElement("iframe");
+          iframe.title = "Donation form powered by Zeffy";
+          iframe.src = "https://www.zeffy.com/embed/donation-form/support-catechizeing";
+          iframe.allowPaymentRequest = true;
+          iframe.setAttribute("allowTransparency", "true");
+          iframe.style.position = "absolute";
+          iframe.style.border = "0";
+          iframe.style.top = "0";
+          iframe.style.left = "0";
+          iframe.style.bottom = "0";
+          iframe.style.right = "0";
+          iframe.style.width = "100%";
+          iframe.style.height = "100%";
+          iframe.style.background = "transparent";
+
+          container.appendChild(iframe);
+          container.hidden = false;
+          trigger.textContent = "Donation form loaded";
+          trigger.disabled = true;
+          trigger.style.opacity = "0.7";
+          trigger.style.cursor = "default";
+          loaded = true;
+          container.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      };
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initDonationForm, { once: true });
+      } else {
+        initDonationForm();
+      }
+    })();
+  </script>
 </Main>

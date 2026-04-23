@@ -3,7 +3,7 @@ import Main from "@/layouts/Main.astro";
 ---
 
 <Main title="Copyright | Bible Games">
-  <section class="panel">
+  <section class="panel info-page info-page-dark">
     <h1 class="title">Copyright</h1>
 
     <p class="subtitle">Matthew 10:8: "Freely you have received; freely give."</p>
@@ -13,8 +13,38 @@ import Main from "@/layouts/Main.astro";
     </p>
 
     <p>
-      Bible text used in puzzles comes from the Berean Standard Bible (BSB) which has been dedicated to the public domain. Minor moodications have been made to the text.
+      Bible text used in puzzles comes from the Berean Standard Bible (BSB), which has been dedicated to the public domain. Minor modifications have been made to the text for display.
     </p>
 
   </section>
+
+  <style>
+    .info-page {
+      font-size: 1.12rem;
+      line-height: 1.7;
+    }
+
+    .info-page-dark {
+      background: linear-gradient(180deg, #103f36 0%, #0d342d 100%);
+      border-color: #123a30;
+      color: #e9f6f1;
+    }
+
+    .info-page-dark .title,
+    .info-page-dark .subtitle {
+      color: #f0fffa;
+    }
+
+    .info-page .subtitle {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-top: 0.7rem;
+      margin-bottom: 1rem;
+    }
+
+    .info-page p {
+      margin-top: 0.9rem;
+      margin-bottom: 0.9rem;
+    }
+  </style>
 </Main>

@@ -8,6 +8,14 @@ type Props = {
 };
 
 const { title = "Bible Games" } = Astro.props;
+const pathname = Astro.url.pathname;
+const brandThemeClass = pathname.includes("/games/cryptogram/")
+  ? "brand-cryptogram"
+  : pathname.includes("/games/verse-unscramble/")
+    ? "brand-verse-unscramble"
+    : pathname.includes("/games/word-search/")
+      ? "brand-word-search"
+      : "brand-default";
 ---
 
 <!doctype html>
@@ -20,7 +28,7 @@ const { title = "Bible Games" } = Astro.props;
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>{title}</title>
   </head>
-  <body>
+  <body class={brandThemeClass}>
     <Header />
     <main class="shell">
       <slot />

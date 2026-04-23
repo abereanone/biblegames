@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Bubblegum+Sans&display=swap");
-
 :root {
   --bg: #f6f7eb;
   --panel: #fffef9;
@@ -7,6 +5,14 @@
   --accent: #3f7d58;
   --accent-strong: #2f5e42;
   --line: #d8decf;
+  --brand-header-top: #103f36;
+  --brand-header-bottom: #0d342d;
+  --brand-header-border: #123a30;
+  --brand-footer-top: #103f36;
+  --brand-footer-bottom: #0d342d;
+  --brand-footer-link: #b9f0df;
+  --brand-footer-link-hover: #d8fff3;
+  --brand-footer-copy: #ffe59a;
 }
 
 * {
@@ -23,7 +29,16 @@ body {
 }
 
 a {
-  color: var(--accent-strong);
+  color: #86d9c2;
+}
+
+a:visited {
+  color: #86d9c2;
+}
+
+a:hover,
+a:focus-visible {
+  color: #6dc8af;
 }
 
 .site-header {
@@ -32,8 +47,8 @@ a {
   align-items: center;
   gap: 1rem;
   padding: 1rem 1.25rem;
-  background: linear-gradient(180deg, #1f5c4d 0%, #1a4f42 100%);
-  border-bottom: 1px solid #123a30;
+  background: linear-gradient(180deg, var(--brand-header-top) 0%, var(--brand-header-bottom) 100%);
+  border-bottom: 1px solid var(--brand-header-border);
   position: sticky;
   top: 0;
 }
@@ -74,23 +89,24 @@ a {
 }
 
 .brand-clean {
-  font-family: "Bubblegum Sans", "Trebuchet MS", "Segoe UI", sans-serif;
-  font-weight: 400;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-weight: 800;
   letter-spacing: 0.01em;
   color: #86d9c2;
-  -webkit-text-stroke: 1px #101817;
-  text-stroke: 1px #101817;
+  -webkit-text-stroke: 0.8px #101817;
+  text-stroke: 0.8px #101817;
   text-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.45),
-    0 1.5px 0 #101817;
+    0 1px 0 rgba(255, 255, 255, 0.35),
+    0 0 1px rgba(16, 24, 23, 0.3);
 }
 
 .brand-dot {
-  font-weight: 400;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-weight: 800;
   color: #86d9c2;
   margin-left: 0.02em;
-  -webkit-text-stroke: 1px #101817;
-  text-stroke: 1px #101817;
+  -webkit-text-stroke: 0.8px #101817;
+  text-stroke: 0.8px #101817;
 }
 
 @media (max-width: 520px) {
@@ -117,7 +133,7 @@ a {
   text-align: center;
   padding: 1.5rem 1rem 2.25rem;
   border-top: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.65);
+  background: linear-gradient(180deg, var(--brand-footer-top) 0%, var(--brand-footer-bottom) 100%);
 }
 
 .footer-links {
@@ -128,9 +144,48 @@ a {
   justify-content: center;
 }
 
+.footer-links a {
+  color: var(--brand-footer-link);
+  font-size: 1.08rem;
+}
+
+.footer-links a:hover,
+.footer-links a:focus-visible {
+  color: var(--brand-footer-link-hover);
+}
+
+.footer-primary {
+  font-size: 1.08rem !important;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
 .footer-copy {
   margin: 0.5rem 0 0;
-  color: #48614f;
+  color: var(--brand-footer-copy);
+  font-weight: 700;
+}
+
+body.brand-cryptogram {
+  --brand-header-top: #2f5b9f;
+  --brand-header-bottom: #1f3f71;
+  --brand-header-border: #1a3660;
+  --brand-footer-top: #2f5b9f;
+  --brand-footer-bottom: #1f3f71;
+  --brand-footer-link: #b9f0df;
+  --brand-footer-link-hover: #d8fff3;
+  --brand-footer-copy: #ffefbd;
+}
+
+body.brand-verse-unscramble {
+  --brand-header-top: #a85e2a;
+  --brand-header-bottom: #7e461e;
+  --brand-header-border: #6f3d19;
+  --brand-footer-top: #a85e2a;
+  --brand-footer-bottom: #7e461e;
+  --brand-footer-link: #b9f0df;
+  --brand-footer-link-hover: #d8fff3;
+  --brand-footer-copy: #fff0b8;
 }
 
 .panel {
@@ -164,6 +219,29 @@ a {
 .chapter-jump-grid {
   margin-top: 0.85rem;
   align-items: end;
+}
+
+.chapter-jump-spacer {
+  min-height: 2.75rem;
+}
+
+.cryptogram-tools-row {
+  margin-top: 0.75rem;
+  grid-template-columns: minmax(120px, 0.2fr) minmax(320px, 0.8fr);
+  align-items: start;
+}
+
+.cryptogram-clue-control {
+  max-width: 180px;
+}
+
+.cryptogram-print-control {
+  width: 100%;
+  justify-self: stretch;
+}
+
+.cryptogram-print-control > button {
+  width: 100%;
 }
 
 #ws-go-link,
@@ -217,8 +295,8 @@ button,
 }
 
 .theme-word-search {
-  --game-accent: #3f7d58;
-  --game-ink: #2f5e42;
+  --game-accent: #103f36;
+  --game-ink: #123a30;
 }
 
 .theme-cryptogram {
@@ -245,14 +323,13 @@ button,
 
 .game-theme .title,
 .game-theme h2,
-.game-theme label,
-.game-theme a {
+.game-theme label {
   color: var(--game-ink);
 }
 
 .game-btn[data-game="word-search"] {
-  background: #3f7d58;
-  border-color: #3f7d58;
+  background: #103f36;
+  border-color: #103f36;
 }
 
 .game-btn[data-game="cryptogram"] {
@@ -270,6 +347,13 @@ button,
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 0.75rem;
+}
+
+.btn,
+.btn:visited,
+.btn:hover,
+.btn:focus-visible {
+  color: #fff;
 }
 
 .muted {
@@ -428,7 +512,7 @@ button,
 }
 
 .unscramble-sheet {
-  overflow-x: auto;
+  overflow-x: hidden;
   background: #fff;
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -448,6 +532,7 @@ button,
   border: 1px solid #becdb6;
   border-radius: 8px;
   padding: 0.45rem 0.5rem;
+  overflow: hidden;
 }
 
 .scramble-cell {
@@ -458,7 +543,10 @@ button,
 }
 
 .answer-cell {
-  white-space: nowrap;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.28rem;
+  min-width: 0;
 }
 
 .hint-letter {
@@ -469,21 +557,43 @@ button,
 .answer-line {
   display: inline-flex;
   align-items: flex-end;
-  gap: 0.35rem;
-  margin-right: 0.35rem;
+  gap: 0.3rem;
+  margin-right: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .answer-slot {
   display: inline-block;
-  width: 1.15rem;
+  width: 1.05rem;
   height: 1.2rem;
   border-bottom: 1px solid #172219;
+  flex: 0 0 auto;
 }
 
-.length-note {
-  margin-left: 0.35rem;
-  color: #41584a;
-  font-size: 0.9rem;
+.answer-line.compact {
+  gap: 0.2rem;
+}
+
+.answer-line.compact .answer-slot {
+  width: 0.82rem;
+}
+
+.answer-line.tight {
+  gap: 0.14rem;
+}
+
+.answer-line.tight .answer-slot {
+  width: 0.66rem;
+}
+
+.answer-line.ultra {
+  gap: 0.1rem;
+}
+
+.answer-line.ultra .answer-slot {
+  width: 0.54rem;
 }
 
 .word-bank {
@@ -536,6 +646,15 @@ button,
 @media (max-width: 720px) {
   .verse-select-row {
     grid-template-columns: 1fr;
+  }
+
+  .cryptogram-tools-row {
+    grid-template-columns: 1fr;
+  }
+
+  .cryptogram-print-control {
+    max-width: none;
+    justify-self: stretch;
   }
 }
 

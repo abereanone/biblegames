@@ -90,6 +90,15 @@ const subtitleText = chapterData
         </a>
         <a
           class="btn game-btn"
+          data-game="cryptogram"
+          href={`/games/cryptogram/${difficulty}/${chapterData.bookCode}/${chapterData.chapter}${
+            defaultVerseKey ? `?verse=${encodeURIComponent(defaultVerseKey)}` : ""
+          }`}
+        >
+          Cryptogram
+        </a>
+        <a
+          class="btn game-btn"
           data-game="verse-unscramble"
           href={`/games/verse-unscramble/${difficulty}/${chapterData.bookCode}/${chapterData.chapter}${
             defaultVerseKey ? `?verse=${encodeURIComponent(defaultVerseKey)}` : ""
@@ -97,7 +106,6 @@ const subtitleText = chapterData
         >
           Verse Unscramble
         </a>
-        <button type="button" onclick="window.__bgPrint ? window.__bgPrint(event) : window.print()">Print This Page</button>
       </div>
     </section>
   ) : null}
@@ -107,7 +115,7 @@ const subtitleText = chapterData
       <>
         <h1 class="title">Cryptogram</h1>
         <p class="subtitle">{subtitleText}</p>
-        <p class="muted">{difficultyNote}</p>
+        <p class="muted no-print">{difficultyNote}</p>
 
         <div class="button-row no-print">
           {difficultyLinks.map((entry) => (
@@ -138,17 +146,6 @@ const subtitleText = chapterData
             </select>
           </div>
           <div>
-            <a id="cg-go-link" class="btn" href={`/games/cryptogram/${difficulty}/${selectedBook?.code ?? "gen"}/${selectedChapter}`}>
-              Go To Chapter
-            </a>
-          </div>
-        </div>
-
-        <p class="no-print print-orientation-tip">Print tip: set orientation to Landscape for Cryptogram pages.</p>
-
-        <div class="field-grid no-print">
-          <div>
-            <label for="verse-select">Choose Verse</label>
             <select id="verse-select">
               {verseOptions.map((verse) => (
                 <option value={verse.key} selected={verse.key === defaultVerseKey}>
@@ -157,17 +154,23 @@ const subtitleText = chapterData
               ))}
             </select>
           </div>
-          <div>
-            <label for="clue-count-select">Clues Prefilled</label>
+        </div>
+
+        <div class="field-grid cryptogram-tools-row no-print">
+          <div class="cryptogram-clue-control">
             <select id="clue-count-select">
               {Array.from({ length: 27 }, (_, index) => (
                 <option value={index} selected={index === hintCount}>
-                  {index}
+                  {`${index} ${index === 1 ? "Clue" : "Clues"}`}
                 </option>
               ))}
             </select>
           </div>
+          <div class="cryptogram-print-control">
+            <button type="button" onclick="window.__bgPrint ? window.__bgPrint(event) : window.print()">Print This Page</button>
+          </div>
         </div>
+        <p class="no-print print-orientation-tip">Print tip: set orientation to Landscape for Cryptogram pages.</p>
 
         <p><strong id="cryptogram-reference"></strong></p>
         <div class="crypto-box">
@@ -219,7 +222,6 @@ const subtitleText = chapterData
   const cgDifficulty = String(difficulty || "medium");
   const cgBookSelect = document.getElementById("cg-book-select");
   const cgChapterSelect = document.getElementById("cg-chapter-select");
-  const cgGoLink = document.getElementById("cg-go-link");
   const keepVerseLinks = Array.from(document.querySelectorAll("[data-keep-verse-link]"));
   const verseSelect = document.getElementById("verse-select");
   const clueCountSelect = document.getElementById("clue-count-select");
@@ -250,15 +252,6 @@ const subtitleText = chapterData
     }
   }
 
-  function syncCgGoLink() {
-    if (!cgBookSelect || !cgChapterSelect || !cgGoLink) {
-      return;
-    }
-    const bookCode = cgBookSelect.value || "gen";
-    const chapter = cgChapterSelect.value || "1";
-    cgGoLink.setAttribute("href", `/games/cryptogram/${cgDifficulty}/${bookCode}/${chapter}`);
-  }
-
   function selectedCgChapterPath(includeVerse = false) {
     if (!cgBookSelect || !cgChapterSelect) {
       return "";
@@ -270,13 +263,6 @@ const subtitleText = chapterData
       return basePath;
     }
     return `${basePath}?verse=${encodeURIComponent(`${bookCode}.1.1`)}`;
-  }
-
-  function navigateCgToSelection() {
-    const href = selectedCgChapterPath() || (cgGoLink ? cgGoLink.getAttribute("href") || cgGoLink.href : "");
-    if (href) {
-      window.location.href = href;
-    }
   }
 
   function withVerseQuery(href, verseKey) {
@@ -518,7 +504,6 @@ const subtitleText = chapterData
   if (cgBookSelect) {
     cgBookSelect.addEventListener("change", () => {
       buildCgChapterOptions(cgBookSelect.value, 1);
-      syncCgGoLink();
       const nextPath = selectedCgChapterPath(true);
       if (nextPath) {
         window.location.href = nextPath;
@@ -528,13 +513,14 @@ const subtitleText = chapterData
 
   if (cgChapterSelect) {
     cgChapterSelect.addEventListener("change", () => {
-      syncCgGoLink();
-      navigateCgToSelection();
+      const nextPath = selectedCgChapterPath();
+      if (nextPath) {
+        window.location.href = nextPath;
+      }
     });
   }
 
   buildCgChapterOptions(String(selectedBookCode || "gen"), Number(selectedChapter || 1));
-  syncCgGoLink();
   syncKeepVerseLinks();
   renderCryptogram(findVerseByKey(defaultKey));
   syncAnswerVisibility();

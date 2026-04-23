@@ -81,7 +81,15 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
         >
           Cryptogram
         </a>
-        <button type="button" onclick="window.__bgPrint ? window.__bgPrint(event) : window.print()">Print This Page</button>
+        <a
+          class="btn game-btn"
+          data-game="verse-unscramble"
+          href={`/games/verse-unscramble/${difficulty}/${chapterData.bookCode}/${chapterData.chapter}${
+            selectedVerseKey ? `?verse=${encodeURIComponent(selectedVerseKey)}` : ""
+          }`}
+        >
+          Verse Unscramble
+        </a>
       </div>
     </section>
   ) : null}
@@ -116,9 +124,6 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
               })}
             </select>
           </div>
-        </div>
-
-        <div class="field-grid verse-select-row no-print">
           <div>
             <select id="vu-verse-select" name="vu-verse">
               {verseOptions.map((verse) => (
@@ -126,6 +131,9 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
               ))}
             </select>
           </div>
+        </div>
+        <div class="button-row no-print">
+          <button type="button" onclick="window.__bgPrint ? window.__bgPrint(event) : window.print()">Print This Page</button>
         </div>
 
         <p class="no-print print-orientation-tip">Print tip: set orientation to Portrait for Verse Unscramble pages.</p>
@@ -137,12 +145,11 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
                 <div class="scramble-cell">{entry.scrambled}</div>
                 <div class="answer-cell">
                   {puzzle.showFirstLetterHints ? <span class="hint-letter">{entry.firstLetter}</span> : null}
-                  <span class="answer-line">
+                  <span class={`answer-line ${entry.length >= 12 ? "ultra" : entry.length >= 10 ? "tight" : entry.length >= 8 ? "compact" : ""}`}>
                     {Array.from({ length: entry.length }, () => (
                       <span class="answer-slot" aria-hidden="true"></span>
                     ))}
                   </span>
-                  <span class="length-note">({entry.length})</span>
                 </div>
               </li>
             ))}
@@ -352,7 +359,15 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
     const itemsHtml = built.items
       .map((entry) => {
         const hintHtml = showFirstHints ? `<span class="hint-letter">${entry.firstLetter}</span>` : "";
-        return `<li class="unscramble-item"><div class="scramble-cell">${entry.scrambled}</div><div class="answer-cell">${hintHtml}<span class="answer-line">${createAnswerSlots(entry.length)}</span><span class="length-note">(${entry.length})</span></div></li>`;
+        const lineClass =
+          entry.length >= 12
+            ? "answer-line ultra"
+            : entry.length >= 10
+              ? "answer-line tight"
+              : entry.length >= 8
+                ? "answer-line compact"
+                : "answer-line";
+        return `<li class="unscramble-item"><div class="scramble-cell">${entry.scrambled}</div><div class="answer-cell">${hintHtml}<span class="${lineClass}">${createAnswerSlots(entry.length)}</span></div></li>`;
       })
       .join("");
 

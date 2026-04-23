@@ -69,6 +69,13 @@ function puzzleSourceLine(value: PuzzleDifficulty, bookName: string, chapter: nu
       <div class="button-row">
         <a
           class="btn game-btn"
+          data-game="word-search"
+          href={`/games/word-search/${difficulty}/${chapterData.bookCode}/${chapterData.chapter}`}
+        >
+          Word Search
+        </a>
+        <a
+          class="btn game-btn"
           data-game="cryptogram"
           href={`/games/cryptogram/${difficulty}/${chapterData.bookCode}/${chapterData.chapter}`}
         >
@@ -81,7 +88,6 @@ function puzzleSourceLine(value: PuzzleDifficulty, bookName: string, chapter: nu
         >
           Verse Unscramble
         </a>
-        <button type="button" onclick="window.__bgPrint ? window.__bgPrint(event) : window.print()">Print This Page</button>
       </div>
     </section>
   ) : null}
@@ -115,11 +121,10 @@ function puzzleSourceLine(value: PuzzleDifficulty, bookName: string, chapter: nu
               })}
             </select>
           </div>
-          <div>
-            <a id="ws-go-link" class="btn" href={`/games/word-search/${difficulty}/${selectedBook?.code ?? "gen"}/${selectedChapter}`}>
-              Go To Chapter
-            </a>
-          </div>
+          <div class="chapter-jump-spacer" aria-hidden="true"></div>
+        </div>
+        <div class="button-row no-print">
+          <button type="button" onclick="window.__bgPrint ? window.__bgPrint(event) : window.print()">Print This Page</button>
         </div>
 
         <p class="no-print print-orientation-tip">Print tip: set orientation to Portrait for Word Search pages.</p>
@@ -163,7 +168,6 @@ function puzzleSourceLine(value: PuzzleDifficulty, bookName: string, chapter: nu
   const wsDifficulty = String(difficulty || "medium");
   const wsBookSelect = document.getElementById("ws-book-select");
   const wsChapterSelect = document.getElementById("ws-chapter-select");
-  const wsGoLink = document.getElementById("ws-go-link");
 
   function buildWsChapterOptions(bookCode, keepChapter) {
     if (!wsChapterSelect) {
@@ -184,15 +188,6 @@ function puzzleSourceLine(value: PuzzleDifficulty, bookName: string, chapter: nu
     }
   }
 
-  function syncWsGoLink() {
-    if (!wsBookSelect || !wsChapterSelect || !wsGoLink) {
-      return;
-    }
-    const bookCode = wsBookSelect.value || "gen";
-    const chapter = wsChapterSelect.value || "1";
-    wsGoLink.setAttribute("href", `/games/word-search/${wsDifficulty}/${bookCode}/${chapter}`);
-  }
-
   function selectedWsChapterPath() {
     if (!wsBookSelect || !wsChapterSelect) {
       return "";
@@ -202,28 +197,24 @@ function puzzleSourceLine(value: PuzzleDifficulty, bookName: string, chapter: nu
     return `/games/word-search/${wsDifficulty}/${bookCode}/${chapter}`;
   }
 
-  function navigateWsToSelection() {
-    const href = selectedWsChapterPath() || (wsGoLink ? wsGoLink.getAttribute("href") || wsGoLink.href : "");
-    if (href) {
-      window.location.href = href;
-    }
-  }
-
   if (wsBookSelect) {
     wsBookSelect.addEventListener("change", () => {
       buildWsChapterOptions(wsBookSelect.value, 1);
-      syncWsGoLink();
-      navigateWsToSelection();
+      const nextPath = selectedWsChapterPath();
+      if (nextPath) {
+        window.location.href = nextPath;
+      }
     });
   }
 
   if (wsChapterSelect) {
     wsChapterSelect.addEventListener("change", () => {
-      syncWsGoLink();
-      navigateWsToSelection();
+      const nextPath = selectedWsChapterPath();
+      if (nextPath) {
+        window.location.href = nextPath;
+      }
     });
   }
 
   buildWsChapterOptions(String(selectedBookCode || "gen"), Number(selectedChapter || 1));
-  syncWsGoLink();
 </script>
