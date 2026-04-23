@@ -15,6 +15,9 @@ const { title = "Bible Games" } = Astro.props;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="shortcut icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>{title}</title>
   </head>
   <body>
@@ -23,5 +26,71 @@ const { title = "Bible Games" } = Astro.props;
       <slot />
     </main>
     <Footer />
+    <script is:inline>
+      (() => {
+        const PX_PER_IN = 96;
+        let lastScrollY = 0;
+
+        function getPrintConfig(target) {
+          const mode = target?.getAttribute("data-print-mode") || "portrait";
+          if (mode === "landscape") {
+            return { widthIn: 11, heightIn: 8.5, marginIn: 0.4 };
+          }
+          return { widthIn: 8.5, heightIn: 11, marginIn: 0.35 };
+        }
+
+        function applyPrintFit() {
+          const target = document.querySelector(".print-fit-target");
+          if (!target) {
+            return;
+          }
+
+          const { widthIn, heightIn, marginIn } = getPrintConfig(target);
+          const maxWidth = (widthIn - marginIn * 2) * PX_PER_IN;
+          const maxHeight = (heightIn - marginIn * 2) * PX_PER_IN;
+          const rect = target.getBoundingClientRect();
+          const widthScale = rect.width > 0 ? maxWidth / rect.width : 1;
+          const heightScale = rect.height > 0 ? maxHeight / rect.height : 1;
+          const scale = Math.min(1, widthScale, heightScale);
+
+          document.documentElement.style.setProperty("--print-scale", String(scale));
+          document.documentElement.classList.toggle("print-fit-active", scale < 0.999);
+        }
+
+        function clearPrintFit() {
+          document.documentElement.style.removeProperty("--print-scale");
+          document.documentElement.classList.remove("print-fit-active");
+          if (lastScrollY > 0) {
+            setTimeout(() => {
+              window.scrollTo({ top: lastScrollY, left: 0, behavior: "auto" });
+            }, 0);
+          }
+        }
+
+        window.__bgPrint = (event) => {
+          if (event) {
+            event.preventDefault?.();
+            event.stopPropagation?.();
+          }
+          const active = document.activeElement;
+          if (active && "blur" in active && typeof active.blur === "function") {
+            active.blur();
+          }
+          try {
+            history.pushState({ printGuard: true, t: Date.now() }, "", window.location.href);
+          } catch {
+            // Ignore history errors and continue to print.
+          }
+          lastScrollY = window.scrollY || window.pageYOffset || 0;
+          applyPrintFit();
+          setTimeout(() => {
+            window.print();
+          }, 0);
+        };
+
+        window.addEventListener("beforeprint", applyPrintFit);
+        window.addEventListener("afterprint", clearPrintFit);
+      })();
+    </script>
   </body>
 </html>

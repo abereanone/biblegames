@@ -11,7 +11,7 @@ const firstBook = books[0];
   <section class="panel">
     <h1 class="title">Printable Bible Games</h1>
     <p class="subtitle">
-      Pick a chapter, then print a Word Search or a Cryptogram.
+      Pick a chapter, then print a Word Search, Cryptogram, or Verse Unscramble.
     </p>
 
     {!bible.hasData ? (
@@ -55,11 +55,14 @@ const firstBook = books[0];
         </div>
 
         <div class="button-row">
-          <a id="word-search-link" class="btn" href={`/games/word-search/medium/${firstBook?.code ?? "gen"}/1`}>
+          <a id="word-search-link" class="btn game-btn" data-game="word-search" href={`/games/word-search/medium/${firstBook?.code ?? "gen"}/1`}>
             Open Word Search
           </a>
-          <a id="cryptogram-link" class="btn alt" href={`/games/cryptogram/medium/${firstBook?.code ?? "gen"}/1`}>
+          <a id="cryptogram-link" class="btn game-btn" data-game="cryptogram" href={`/games/cryptogram/medium/${firstBook?.code ?? "gen"}/1`}>
             Open Cryptogram
+          </a>
+          <a id="verse-unscramble-link" class="btn game-btn" data-game="verse-unscramble" href={`/games/verse-unscramble/medium/${firstBook?.code ?? "gen"}/1`}>
+            Open Verse Unscramble
           </a>
         </div>
 
@@ -68,17 +71,27 @@ const firstBook = books[0];
         <div class="button-row">
           <a
             id="random-word-search-link"
-            class="btn"
+            class="btn game-btn"
+            data-game="word-search"
             href={`/games/word-search/medium/${firstBook?.code ?? "gen"}/1`}
           >
             Random Word Search
           </a>
           <a
             id="random-cryptogram-link"
-            class="btn alt"
+            class="btn game-btn"
+            data-game="cryptogram"
             href={`/games/cryptogram/medium/${firstBook?.code ?? "gen"}/1`}
           >
             Random Cryptogram
+          </a>
+          <a
+            id="random-verse-unscramble-link"
+            class="btn game-btn"
+            data-game="verse-unscramble"
+            href={`/games/verse-unscramble/medium/${firstBook?.code ?? "gen"}/1`}
+          >
+            Random Verse Unscramble
           </a>
         </div>
 
@@ -89,14 +102,17 @@ const firstBook = books[0];
 </Main>
 
 <script is:inline define:vars={{ books }}>
+  const DIFFICULTY_STORAGE_KEY = "bg:difficulty";
   const safeBooks = Array.isArray(books) ? books : [];
   const bookSelect = document.getElementById("book-select");
   const chapterSelect = document.getElementById("chapter-select");
   const difficultySelect = document.getElementById("difficulty-select");
   const wordLink = document.getElementById("word-search-link");
   const cryptLink = document.getElementById("cryptogram-link");
+  const verseUnscrambleLink = document.getElementById("verse-unscramble-link");
   const randomWordLink = document.getElementById("random-word-search-link");
   const randomCryptLink = document.getElementById("random-cryptogram-link");
+  const randomVerseUnscrambleLink = document.getElementById("random-verse-unscramble-link");
 
   function buildChapterOptions(chapterCount, selectedChapter = 1) {
     if (!chapterSelect) {
@@ -115,7 +131,7 @@ const firstBook = books[0];
   }
 
   function syncLinks() {
-    if (!bookSelect || !chapterSelect || !wordLink || !cryptLink) {
+    if (!bookSelect || !chapterSelect || !wordLink || !cryptLink || !verseUnscrambleLink) {
       return;
     }
     const book = bookSelect.value;
@@ -123,6 +139,7 @@ const firstBook = books[0];
     const difficulty = difficultySelect?.value || "medium";
     wordLink.setAttribute("href", `/games/word-search/${difficulty}/${book}/${chapter}`);
     cryptLink.setAttribute("href", `/games/cryptogram/${difficulty}/${book}/${chapter}`);
+    verseUnscrambleLink.setAttribute("href", `/games/verse-unscramble/${difficulty}/${book}/${chapter}`);
   }
 
   function randomChapterPath(game) {
@@ -143,6 +160,9 @@ const firstBook = books[0];
     if (randomCryptLink) {
       randomCryptLink.setAttribute("href", randomChapterPath("cryptogram"));
     }
+    if (randomVerseUnscrambleLink) {
+      randomVerseUnscrambleLink.setAttribute("href", randomChapterPath("verse-unscramble"));
+    }
   }
 
   if (bookSelect) {
@@ -159,6 +179,11 @@ const firstBook = books[0];
 
   if (difficultySelect) {
     difficultySelect.addEventListener("change", () => {
+      try {
+        localStorage.setItem(DIFFICULTY_STORAGE_KEY, difficultySelect.value || "medium");
+      } catch {
+        // Ignore storage errors; links still sync in-memory.
+      }
       syncLinks();
       syncQuickStartLinks();
     });
@@ -176,5 +201,24 @@ const firstBook = books[0];
     });
   }
 
+  if (randomVerseUnscrambleLink) {
+    randomVerseUnscrambleLink.addEventListener("click", () => {
+      randomVerseUnscrambleLink.setAttribute("href", randomChapterPath("verse-unscramble"));
+    });
+  }
+
+  if (difficultySelect) {
+    try {
+      const savedDifficulty = localStorage.getItem(DIFFICULTY_STORAGE_KEY) || "";
+      const hasSavedDifficulty = ["easy", "medium", "hard"].includes(savedDifficulty);
+      if (hasSavedDifficulty) {
+        difficultySelect.value = savedDifficulty;
+      }
+    } catch {
+      // Ignore storage errors and keep the markup default.
+    }
+  }
+
+  syncLinks();
   syncQuickStartLinks();
 </script>

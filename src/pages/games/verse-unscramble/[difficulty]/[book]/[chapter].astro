@@ -1,0 +1,425 @@
+---
+import Main from "@/layouts/Main.astro";
+import { getBibleData, getChapter } from "@/lib/bible/data";
+import { DIFFICULTIES, parseDifficulty } from "@/lib/games/difficulty";
+import { buildVerseUnscramble, pickUnscrambleVerse } from "@/lib/games/verseUnscramble";
+
+export async function getStaticPaths() {
+  const bible = await getBibleData();
+
+  return DIFFICULTIES.flatMap((difficulty) =>
+    bible.books.flatMap((book) =>
+      Array.from({ length: book.chapterCount }, (_, index) => ({
+        params: {
+          difficulty,
+          book: book.code,
+          chapter: String(index + 1),
+        },
+      }))
+    )
+  );
+}
+
+const difficulty = parseDifficulty(String(Astro.params.difficulty ?? "medium"));
+const rawBook = String(Astro.params.book ?? "").toLowerCase();
+const rawChapter = Number(Astro.params.chapter ?? "0");
+const chapterData = await getChapter(rawBook, rawChapter);
+const requestedVerseKey = String(Astro.url.searchParams.get("verse") ?? "").trim();
+const bibleData = await getBibleData();
+const books = bibleData.books;
+const selectedBookCode = chapterData?.bookCode ?? rawBook;
+const selectedBook = books.find((book) => book.code === selectedBookCode) ?? books[0];
+const selectedChapter = chapterData?.chapter ?? 1;
+
+const verseOptions = chapterData
+  ? chapterData.verses.map((verse) => ({
+      key: verse.key,
+      reference: verse.reference,
+      text: verse.text,
+    }))
+  : [];
+
+const defaultVerse = chapterData ? pickUnscrambleVerse(chapterData.verses, difficulty) : null;
+const selectedVerse =
+  chapterData?.verses.find((verse) => verse.key === requestedVerseKey) ??
+  defaultVerse ??
+  chapterData?.verses[0] ??
+  null;
+const selectedVerseKey = selectedVerse?.key ?? "";
+const puzzle = selectedVerse ? buildVerseUnscramble(selectedVerse, difficulty) : null;
+const title = chapterData
+  ? `Verse Unscramble (${difficulty}) | ${chapterData.bookName} ${chapterData.chapter}`
+  : "Verse Unscramble | Chapter Not Found";
+
+const difficultyLinks = DIFFICULTIES.map((value) => ({
+  value,
+  label: value.charAt(0).toUpperCase() + value.slice(1),
+  href: chapterData
+    ? `/games/verse-unscramble/${value}/${chapterData.bookCode}/${chapterData.chapter}${
+        selectedVerseKey ? `?verse=${encodeURIComponent(selectedVerseKey)}` : ""
+      }`
+    : "/",
+}));
+
+---
+
+<Main title={title}>
+  {chapterData && selectedVerse && puzzle ? (
+    <section class="panel no-print game-nav-panel game-theme theme-verse-unscramble">
+      <div class="button-row">
+        <a
+          class="btn game-btn"
+          data-game="word-search"
+          href={`/games/word-search/${difficulty}/${chapterData.bookCode}/${chapterData.chapter}`}
+        >
+          Word Search
+        </a>
+        <a
+          class="btn game-btn"
+          data-game="cryptogram"
+          href={`/games/cryptogram/${difficulty}/${chapterData.bookCode}/${chapterData.chapter}`}
+        >
+          Cryptogram
+        </a>
+        <button type="button" onclick="window.__bgPrint ? window.__bgPrint(event) : window.print()">Print This Page</button>
+      </div>
+    </section>
+  ) : null}
+
+  <section class="panel game-theme theme-verse-unscramble">
+    {chapterData && selectedVerse && puzzle ? (
+      <>
+        <h1 class="title">Verse Unscramble</h1>
+        <p class="muted">{puzzle.clueText}</p>
+
+        <div class="button-row no-print">
+          {difficultyLinks.map((entry) => (
+            <a class={`btn ${entry.value === difficulty ? "" : "alt"}`} href={entry.href} data-keep-verse-link>
+              {entry.label}
+            </a>
+          ))}
+        </div>
+
+        <div class="field-grid chapter-jump-grid no-print">
+          <div>
+            <select id="vu-book-select" name="vu-book">
+              {books.map((book) => (
+                <option value={book.code} selected={book.code === selectedBook?.code}>{book.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <select id="vu-chapter-select" name="vu-chapter">
+              {Array.from({ length: selectedBook?.chapterCount ?? 1 }, (_, index) => {
+                const chapter = index + 1;
+                return <option value={chapter} selected={chapter === selectedChapter}>{chapter}</option>;
+              })}
+            </select>
+          </div>
+        </div>
+
+        <div class="field-grid verse-select-row no-print">
+          <div>
+            <select id="vu-verse-select" name="vu-verse">
+              {verseOptions.map((verse) => (
+                <option value={verse.key} selected={verse.key === selectedVerseKey}>{verse.reference}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <p class="no-print print-orientation-tip">Print tip: set orientation to Portrait for Verse Unscramble pages.</p>
+
+        <div class="unscramble-sheet">
+          <ul id="vu-unscramble-grid" class="unscramble-grid" aria-label="Verse unscramble worksheet">
+            {puzzle.words.map((entry) => (
+              <li class="unscramble-item">
+                <div class="scramble-cell">{entry.scrambled}</div>
+                <div class="answer-cell">
+                  {puzzle.showFirstLetterHints ? <span class="hint-letter">{entry.firstLetter}</span> : null}
+                  <span class="answer-line">
+                    {Array.from({ length: entry.length }, () => (
+                      <span class="answer-slot" aria-hidden="true"></span>
+                    ))}
+                  </span>
+                  <span class="length-note">({entry.length})</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {puzzle.showWordBank ? (
+          <>
+            <h2>Word Bank</h2>
+            <p id="vu-word-bank" class="word-bank">{puzzle.bankWords.join(" | ")}</p>
+          </>
+        ) : null}
+
+        <h2>Solved Verse</h2>
+        <div class="solve-lines" aria-label="Space to write solved verse">
+          <p class="solve-line"></p>
+          <p class="solve-line"></p>
+        </div>
+        <p class="print-credit">
+          Provided Freely with Love from BibleGames.Church <span aria-hidden="true">{"\u2764\uFE0F"}</span> Enjoy
+        </p>
+        <p class="answer-upside">Answer: {selectedVerse.reference} {selectedVerse.text}</p>
+        <label class="answer-toggle no-print" for="vu-answer-toggle">
+          <input id="vu-answer-toggle" type="checkbox" checked />
+          Show Verse
+        </label>
+      </>
+    ) : (
+      <>
+        <h1 class="title">Verse Unscramble</h1>
+        <p class="muted">This chapter was not found.</p>
+        <p><a href="/">Return to chapter picker</a></p>
+      </>
+    )}
+  </section>
+</Main>
+
+<script
+  is:inline
+  define:vars={{ books, difficulty, selectedBookCode, selectedChapter, verseOptions, selectedVerseKey }}
+>
+  const vuBooks = Array.isArray(books) ? books : [];
+  const vuDifficulty = String(difficulty || "medium");
+  const vuVerses = Array.isArray(verseOptions) ? verseOptions : [];
+  const vuInitialVerseKey = String(selectedVerseKey || "");
+  const vuBookSelect = document.getElementById("vu-book-select");
+  const vuChapterSelect = document.getElementById("vu-chapter-select");
+  const vuVerseSelect = document.getElementById("vu-verse-select");
+  const vuGrid = document.getElementById("vu-unscramble-grid");
+  const vuWordBank = document.getElementById("vu-word-bank");
+  const vuAnswerToggle = document.getElementById("vu-answer-toggle");
+  const vuAnswerUpside = document.querySelector(".answer-upside");
+  const keepVerseLinks = Array.from(document.querySelectorAll("[data-keep-verse-link]"));
+
+  function buildVuChapterOptions(bookCode, keepChapter) {
+    if (!vuChapterSelect) {
+      return;
+    }
+    const active = vuBooks.find((book) => book.code === bookCode) ?? vuBooks[0];
+    const maxChapters = active?.chapterCount ?? 1;
+    const chapterToUse = Math.min(Math.max(Number(keepChapter || 1), 1), maxChapters);
+    vuChapterSelect.innerHTML = "";
+    for (let chapter = 1; chapter <= maxChapters; chapter += 1) {
+      const option = document.createElement("option");
+      option.value = String(chapter);
+      option.textContent = String(chapter);
+      if (chapter === chapterToUse) {
+        option.selected = true;
+      }
+      vuChapterSelect.appendChild(option);
+    }
+  }
+
+  function selectedVuChapterPath() {
+    if (!vuBookSelect || !vuChapterSelect) {
+      return "";
+    }
+    const bookCode = vuBookSelect.value || "gen";
+    const chapter = vuChapterSelect.value || "1";
+    return `/games/verse-unscramble/${vuDifficulty}/${bookCode}/${chapter}`;
+  }
+
+  function selectedVuPathWithVerseOne() {
+    if (!vuBookSelect) {
+      return "";
+    }
+    const bookCode = vuBookSelect.value || "gen";
+    const basePath = `/games/verse-unscramble/${vuDifficulty}/${bookCode}/1`;
+    return `${basePath}?verse=${encodeURIComponent(`${bookCode}.1.1`)}`;
+  }
+
+  function withVerseQuery(href, verseKey) {
+    const url = new URL(href, window.location.origin);
+    if (verseKey) {
+      url.searchParams.set("verse", verseKey);
+    } else {
+      url.searchParams.delete("verse");
+    }
+    return `${url.pathname}${url.search}`;
+  }
+
+  function syncVerseLinks() {
+    const verseKey = vuVerseSelect && "value" in vuVerseSelect ? vuVerseSelect.value : "";
+
+    for (const link of keepVerseLinks) {
+      if (!(link instanceof HTMLAnchorElement)) {
+        continue;
+      }
+      link.setAttribute("href", withVerseQuery(link.getAttribute("href") || link.href, verseKey));
+    }
+  }
+
+  function findVerseByKey(key) {
+    return vuVerses.find((verse) => verse.key === key) ?? vuVerses[0] ?? null;
+  }
+
+  function createSeededRandom(seedText) {
+    let hash = 2166136261;
+    for (let i = 0; i < seedText.length; i += 1) {
+      hash ^= seedText.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return () => {
+      hash += 0x6d2b79f5;
+      let temp = Math.imul(hash ^ (hash >>> 15), 1 | hash);
+      temp ^= temp + Math.imul(temp ^ (temp >>> 7), 61 | temp);
+      return ((temp ^ (temp >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function shuffle(values, randomFn) {
+    const list = [...values];
+    for (let i = list.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(randomFn() * (i + 1));
+      [list[i], list[j]] = [list[j], list[i]];
+    }
+    return list;
+  }
+
+  function scrambleWord(word, randomFn) {
+    if (word.length < 3) {
+      return word;
+    }
+    const letters = word.split("");
+    for (let attempts = 0; attempts < 5; attempts += 1) {
+      const shuffled = shuffle(letters, randomFn).join("");
+      if (shuffled !== word) {
+        return shuffled;
+      }
+    }
+    return word.slice(1) + word[0];
+  }
+
+  function normalizeWords(text) {
+    return (String(text || "").match(/[A-Za-z]+/g) ?? []).map((entry) => entry.toUpperCase());
+  }
+
+  function configForDifficulty() {
+    if (vuDifficulty === "easy") {
+      return { maxWords: 12, showWordBank: true, showFirstLetterHints: true };
+    }
+    if (vuDifficulty === "hard") {
+      return { maxWords: 18, showWordBank: false, showFirstLetterHints: false };
+    }
+    return { maxWords: 14, showWordBank: false, showFirstLetterHints: false };
+  }
+
+  function buildPuzzleForVerse(verse) {
+    const config = configForDifficulty();
+    const words = normalizeWords(verse.text).slice(0, config.maxWords);
+    const orderedWords = words.length ? words : ["BIBLE", "VERSE", "TRUTH"];
+    const puzzleWords =
+      vuDifficulty === "medium" || vuDifficulty === "hard"
+        ? shuffle([...orderedWords], createSeededRandom(`${verse.key}|${vuDifficulty}|order`))
+        : orderedWords;
+    const random = createSeededRandom(`${verse.key}|${vuDifficulty}|unscramble`);
+
+    const items = puzzleWords.map((answer, index) => ({
+      index: index + 1,
+      answer,
+      scrambled: scrambleWord(answer, random),
+      length: answer.length,
+      firstLetter: answer[0] || "",
+    }));
+
+    const bankWords = config.showWordBank
+      ? shuffle(
+          items.map((item) => item.answer),
+          createSeededRandom(`${verse.key}|${vuDifficulty}|bank`)
+        )
+      : [];
+
+    return { config, items, bankWords };
+  }
+
+  function createAnswerSlots(length) {
+    return Array.from({ length }, () => '<span class="answer-slot" aria-hidden="true"></span>').join("");
+  }
+
+  function renderUnscramble(verse) {
+    if (!verse || !vuGrid) {
+      return;
+    }
+
+    const built = buildPuzzleForVerse(verse);
+    const showFirstHints = built.config.showFirstLetterHints;
+    const itemsHtml = built.items
+      .map((entry) => {
+        const hintHtml = showFirstHints ? `<span class="hint-letter">${entry.firstLetter}</span>` : "";
+        return `<li class="unscramble-item"><div class="scramble-cell">${entry.scrambled}</div><div class="answer-cell">${hintHtml}<span class="answer-line">${createAnswerSlots(entry.length)}</span><span class="length-note">(${entry.length})</span></div></li>`;
+      })
+      .join("");
+
+    vuGrid.innerHTML = itemsHtml;
+
+    if (vuWordBank) {
+      vuWordBank.textContent = built.bankWords.join(" | ");
+    }
+
+    if (vuAnswerUpside) {
+      vuAnswerUpside.textContent = `Answer: ${verse.reference} ${verse.text}`;
+    }
+  }
+
+  function syncAnswerVisibility() {
+    if (!vuAnswerUpside) {
+      return;
+    }
+    const show = !vuAnswerToggle || !("checked" in vuAnswerToggle) ? true : vuAnswerToggle.checked;
+    vuAnswerUpside.style.display = show ? "" : "none";
+  }
+
+  if (vuBookSelect) {
+    vuBookSelect.addEventListener("change", () => {
+      buildVuChapterOptions(vuBookSelect.value, 1);
+      const nextPath = selectedVuPathWithVerseOne();
+      if (nextPath) {
+        window.location.href = nextPath;
+      }
+    });
+  }
+
+  if (vuChapterSelect) {
+    vuChapterSelect.addEventListener("change", () => {
+      const nextPath = selectedVuChapterPath();
+      if (nextPath) {
+        window.location.href = nextPath;
+      }
+    });
+  }
+
+  if (vuVerseSelect) {
+    vuVerseSelect.addEventListener("change", () => {
+      const chosenVerse = findVerseByKey(vuVerseSelect.value);
+      if (chosenVerse) {
+        renderUnscramble(chosenVerse);
+      }
+      syncVerseLinks();
+      const nextUrl = withVerseQuery(window.location.pathname + window.location.search, vuVerseSelect.value || "");
+      history.replaceState(null, "", nextUrl);
+    });
+  }
+
+  if (vuAnswerToggle) {
+    vuAnswerToggle.addEventListener("change", syncAnswerVisibility);
+  }
+
+  buildVuChapterOptions(String(selectedBookCode || "gen"), Number(selectedChapter || 1));
+  const urlVerse = new URLSearchParams(window.location.search).get("verse") || "";
+  const startVerse = findVerseByKey(urlVerse || vuInitialVerseKey);
+  if (vuVerseSelect && startVerse) {
+    vuVerseSelect.value = startVerse.key;
+  }
+  if (startVerse) {
+    renderUnscramble(startVerse);
+  }
+  syncVerseLinks();
+  syncAnswerVisibility();
+</script>
+

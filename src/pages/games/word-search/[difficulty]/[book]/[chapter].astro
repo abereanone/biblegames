@@ -64,7 +64,29 @@ function puzzleSourceLine(value: PuzzleDifficulty, bookName: string, chapter: nu
 ---
 
 <Main title={title}>
-  <section class="panel">
+  {chapterData && puzzle ? (
+    <section class="panel no-print game-nav-panel game-theme theme-word-search">
+      <div class="button-row">
+        <a
+          class="btn game-btn"
+          data-game="cryptogram"
+          href={`/games/cryptogram/${difficulty}/${chapterData.bookCode}/${chapterData.chapter}`}
+        >
+          Cryptogram
+        </a>
+        <a
+          class="btn game-btn"
+          data-game="verse-unscramble"
+          href={`/games/verse-unscramble/${difficulty}/${chapterData.bookCode}/${chapterData.chapter}`}
+        >
+          Verse Unscramble
+        </a>
+        <button type="button" onclick="window.__bgPrint ? window.__bgPrint(event) : window.print()">Print This Page</button>
+      </div>
+    </section>
+  ) : null}
+
+  <section class="panel game-theme theme-word-search">
     {chapterData && puzzle ? (
       <>
         <h1 class="title">Word Search</h1>
@@ -100,13 +122,6 @@ function puzzleSourceLine(value: PuzzleDifficulty, bookName: string, chapter: nu
           </div>
         </div>
 
-        <p class="no-print">
-          <a href={`/games/cryptogram/${difficulty}/${chapterData.bookCode}/${chapterData.chapter}`}>
-            Switch to Cryptogram
-          </a>
-          {" | "}
-          <button type="button" onclick="window.print()">Print This Page</button>
-        </p>
         <p class="no-print print-orientation-tip">Print tip: set orientation to Portrait for Word Search pages.</p>
 
         <div class="word-grid-wrap">
@@ -129,7 +144,9 @@ function puzzleSourceLine(value: PuzzleDifficulty, bookName: string, chapter: nu
             <li>{word}</li>
           ))}
         </ul>
-        <p class="print-credit">Provided Freely with Love from BibleGames.Church ❤️ Enjoy</p>
+        <p class="print-credit">
+          Provided Freely with Love from BibleGames.Church <span aria-hidden="true">{"\u2764\uFE0F"}</span> Enjoy
+        </p>
       </>
     ) : (
       <>
@@ -176,15 +193,35 @@ function puzzleSourceLine(value: PuzzleDifficulty, bookName: string, chapter: nu
     wsGoLink.setAttribute("href", `/games/word-search/${wsDifficulty}/${bookCode}/${chapter}`);
   }
 
+  function selectedWsChapterPath() {
+    if (!wsBookSelect || !wsChapterSelect) {
+      return "";
+    }
+    const bookCode = wsBookSelect.value || "gen";
+    const chapter = wsChapterSelect.value || "1";
+    return `/games/word-search/${wsDifficulty}/${bookCode}/${chapter}`;
+  }
+
+  function navigateWsToSelection() {
+    const href = selectedWsChapterPath() || (wsGoLink ? wsGoLink.getAttribute("href") || wsGoLink.href : "");
+    if (href) {
+      window.location.href = href;
+    }
+  }
+
   if (wsBookSelect) {
     wsBookSelect.addEventListener("change", () => {
       buildWsChapterOptions(wsBookSelect.value, 1);
       syncWsGoLink();
+      navigateWsToSelection();
     });
   }
 
   if (wsChapterSelect) {
-    wsChapterSelect.addEventListener("change", syncWsGoLink);
+    wsChapterSelect.addEventListener("change", () => {
+      syncWsGoLink();
+      navigateWsToSelection();
+    });
   }
 
   buildWsChapterOptions(String(selectedBookCode || "gen"), Number(selectedChapter || 1));

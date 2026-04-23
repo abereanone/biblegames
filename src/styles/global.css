@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Bubblegum+Sans&display=swap");
+
 :root {
   --bg: #f6f7eb;
   --panel: #fffef9;
@@ -30,8 +32,8 @@ a {
   align-items: center;
   gap: 1rem;
   padding: 1rem 1.25rem;
-  background: var(--panel);
-  border-bottom: 1px solid var(--line);
+  background: linear-gradient(180deg, #1f5c4d 0%, #1a4f42 100%);
+  border-bottom: 1px solid #123a30;
   position: sticky;
   top: 0;
 }
@@ -41,7 +43,7 @@ a {
   align-items: center;
   gap: 0.62rem;
   text-decoration: none;
-  color: var(--ink);
+  color: #e9fff8;
   font-weight: 800;
   letter-spacing: 0.03em;
 }
@@ -58,6 +60,13 @@ a {
   display: block;
 }
 
+.brand-mark img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
 .brand-text {
   font-size: clamp(3rem, 5.4vw, 3.75rem);
   line-height: 1;
@@ -65,17 +74,23 @@ a {
 }
 
 .brand-clean {
-  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
-  font-weight: 800;
+  font-family: "Bubblegum Sans", "Trebuchet MS", "Segoe UI", sans-serif;
+  font-weight: 400;
   letter-spacing: 0.01em;
-  color: #1e4f37;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+  color: #86d9c2;
+  -webkit-text-stroke: 1px #101817;
+  text-stroke: 1px #101817;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.45),
+    0 1.5px 0 #101817;
 }
 
 .brand-dot {
-  font-weight: 800;
-  color: #3b6a4d;
+  font-weight: 400;
+  color: #86d9c2;
   margin-left: 0.02em;
+  -webkit-text-stroke: 1px #101817;
+  text-stroke: 1px #101817;
 }
 
 @media (max-width: 520px) {
@@ -126,6 +141,10 @@ a {
   box-shadow: 0 8px 22px rgba(25, 38, 22, 0.08);
 }
 
+.game-nav-panel {
+  margin-bottom: 0.75rem;
+}
+
 .title {
   margin: 0;
   font-size: clamp(1.6rem, 2.8vw, 2.2rem);
@@ -145,6 +164,15 @@ a {
 .chapter-jump-grid {
   margin-top: 0.85rem;
   align-items: end;
+}
+
+#ws-go-link,
+#cg-go-link,
+#vu-go-link {
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 label {
@@ -181,6 +209,60 @@ button,
 .btn.alt {
   background: #fff;
   color: var(--accent-strong);
+}
+
+.game-theme {
+  --game-accent: var(--accent);
+  --game-ink: var(--accent-strong);
+}
+
+.theme-word-search {
+  --game-accent: #3f7d58;
+  --game-ink: #2f5e42;
+}
+
+.theme-cryptogram {
+  --game-accent: #2f5b9f;
+  --game-ink: #1f3f71;
+}
+
+.theme-verse-unscramble {
+  --game-accent: #a85e2a;
+  --game-ink: #7e461e;
+}
+
+.game-theme .btn,
+.game-theme button {
+  background: var(--game-accent);
+  border-color: var(--game-accent);
+  color: #fff;
+}
+
+.game-theme .btn.alt {
+  background: #fff;
+  color: var(--game-accent);
+}
+
+.game-theme .title,
+.game-theme h2,
+.game-theme label,
+.game-theme a {
+  color: var(--game-ink);
+}
+
+.game-btn[data-game="word-search"] {
+  background: #3f7d58;
+  border-color: #3f7d58;
+}
+
+.game-btn[data-game="cryptogram"] {
+  background: #2f5b9f;
+  border-color: #2f5b9f;
+}
+
+.game-btn[data-game="verse-unscramble"] {
+  background: #a85e2a;
+  border-color: #a85e2a;
 }
 
 .button-row {
@@ -345,6 +427,124 @@ button,
   line-height: 1;
 }
 
+.unscramble-sheet {
+  overflow-x: auto;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.8rem;
+}
+
+.unscramble-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.unscramble-item {
+  border: 1px solid #becdb6;
+  border-radius: 8px;
+  padding: 0.45rem 0.5rem;
+}
+
+.scramble-cell {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.5rem;
+  font-size: 1.08rem;
+}
+
+.answer-cell {
+  white-space: nowrap;
+}
+
+.hint-letter {
+  font-weight: 800;
+  margin-right: 0.22rem;
+}
+
+.answer-line {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 0.35rem;
+  margin-right: 0.35rem;
+}
+
+.answer-slot {
+  display: inline-block;
+  width: 1.15rem;
+  height: 1.2rem;
+  border-bottom: 1px solid #172219;
+}
+
+.length-note {
+  margin-left: 0.35rem;
+  color: #41584a;
+  font-size: 0.9rem;
+}
+
+.word-bank {
+  border: 1px dashed #9db094;
+  border-radius: 8px;
+  padding: 0.55rem 0.65rem;
+  background: #fbfdf8;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.solve-line {
+  margin: 0 0 1rem;
+  min-height: 2.2rem;
+  border-bottom: 1px solid #172219;
+}
+
+.solve-lines {
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.verse-select-row {
+  margin-top: 0.75rem;
+  grid-template-columns: minmax(260px, 1fr) minmax(260px, 1fr);
+  align-items: start;
+}
+
+.answer-upside {
+  margin-top: 0.65in;
+  font-size: 0.72rem;
+  text-align: center;
+  transform: rotate(180deg);
+  color: #41584a;
+}
+
+.answer-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.5rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.print-bottom-block {
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 720px) {
+  .verse-select-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 980px) {
+  .unscramble-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 .print-credit {
   display: none;
 }
@@ -371,7 +571,20 @@ button,
   }
 
   .crypto-key-grid {
-    grid-template-columns: repeat(26, minmax(0, 1fr));
+    grid-template-columns: repeat(13, minmax(0, 1fr));
+  }
+
+  .key-item {
+    min-height: 3.45rem;
+  }
+
+  .key-letter {
+    font-size: 0.88rem;
+    padding-top: 0.14rem;
+  }
+
+  .key-value {
+    font-size: 1.02rem;
   }
 
   .print-credit {
@@ -380,5 +593,39 @@ button,
     text-align: center;
     font-size: 11pt;
     font-weight: 600;
+  }
+
+  .cryptogram-print-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(8.5in - 0.8in);
+  }
+
+  .cryptogram-print-layout .print-bottom-block {
+    margin-top: auto;
+    padding-top: 0.35in;
+  }
+
+  .theme-verse-unscramble .solve-line {
+    min-height: 1.35rem;
+    margin-bottom: 0.55rem;
+  }
+
+  .theme-verse-unscramble .solve-lines {
+    margin-top: 0.3rem;
+    margin-bottom: 0.1rem;
+  }
+
+  .theme-verse-unscramble .print-credit {
+    margin: 0.38in 0 0;
+    font-size: 10pt;
+  }
+
+  .theme-verse-unscramble .answer-upside {
+    margin: 0.04in 0 0;
+    font-size: 0.6rem;
+    line-height: 1.2;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 }
