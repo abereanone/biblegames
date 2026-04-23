@@ -1,0 +1,448 @@
+---
+import Main from "@/layouts/Main.astro";
+import { getBibleData, getChapter } from "@/lib/bible/data";
+import { DIFFICULTIES, parseDifficulty } from "@/lib/games/difficulty";
+import { pickDefaultVerse } from "@/lib/games/cryptogram";
+
+export async function getStaticPaths() {
+  const bible = await getBibleData();
+
+  return DIFFICULTIES.flatMap((difficulty) =>
+    bible.books.flatMap((book) =>
+      Array.from({ length: book.chapterCount }, (_, index) => ({
+        params: {
+          difficulty,
+          book: book.code,
+          chapter: String(index + 1),
+        },
+      }))
+    )
+  );
+}
+
+const difficulty = parseDifficulty(String(Astro.params.difficulty ?? "medium"));
+const rawBook = String(Astro.params.book ?? "").toLowerCase();
+const rawChapter = Number(Astro.params.chapter ?? "0");
+const chapterData = await getChapter(rawBook, rawChapter);
+const requestedVerseKey = String(Astro.url.searchParams.get("verse") ?? "").trim();
+const bibleData = await getBibleData();
+const books = bibleData.books;
+const selectedBookCode = chapterData?.bookCode ?? rawBook;
+const selectedBook = books.find((book) => book.code === selectedBookCode) ?? books[0];
+const selectedChapter = chapterData?.chapter ?? 1;
+
+const verseOptions = chapterData
+  ? chapterData.verses.map((verse) => ({
+      key: verse.key,
+      reference: verse.reference,
+      text: verse.text,
+      bookName: verse.bookName,
+      chapter: verse.chapter,
+      verse: verse.verse,
+    }))
+  : [];
+
+const defaultVerse = chapterData ? pickDefaultVerse(chapterData.verses, difficulty) : null;
+const hasRequestedVerse = requestedVerseKey && verseOptions.some((verse) => verse.key === requestedVerseKey);
+const defaultVerseKey = hasRequestedVerse ? requestedVerseKey : defaultVerse?.key ?? verseOptions[0]?.key ?? "";
+const title = chapterData
+  ? `Cryptogram (${difficulty}) | ${chapterData.bookName} ${chapterData.chapter}`
+  : "Cryptogram | Chapter Not Found";
+
+const difficultyLabel = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+const difficultyLinks = DIFFICULTIES.map((value) => ({
+  value,
+  label: value.charAt(0).toUpperCase() + value.slice(1),
+  href: chapterData
+    ? `/games/cryptogram/${value}/${chapterData.bookCode}/${chapterData.chapter}${
+        defaultVerseKey ? `?verse=${encodeURIComponent(defaultVerseKey)}` : ""
+      }`
+    : "/",
+}));
+
+const hintCount = difficulty === "easy" ? 5 : difficulty === "medium" ? 3 : 0;
+const difficultyNote =
+  difficulty === "easy"
+    ? "Extra hints and shorter verse preference."
+    : difficulty === "hard"
+      ? "Longer verse preference and no letter hints."
+      : "One hint with standard verse length.";
+
+const subtitleText = chapterData
+  ? difficulty === "hard"
+    ? `Cryptogram Challenge | ${difficultyLabel}`
+    : difficulty === "medium"
+      ? `Verse Numbers Included | ${difficultyLabel}`
+      : `${chapterData.bookName} ${chapterData.chapter} | ${difficultyLabel}`
+  : "";
+---
+
+<Main title={title}>
+  <section class="panel">
+    {chapterData ? (
+      <>
+        <h1 class="title">Cryptogram</h1>
+        <p class="subtitle">{subtitleText}</p>
+        <p class="muted">{difficultyNote}</p>
+
+        <div class="button-row no-print">
+          {difficultyLinks.map((entry) => (
+            <a
+              class={`btn ${entry.value === difficulty ? "" : "alt"}`}
+              href={entry.href}
+              data-keep-verse-link
+            >
+              {entry.label}
+            </a>
+          ))}
+        </div>
+
+        <div class="field-grid chapter-jump-grid no-print">
+          <div>
+            <select id="cg-book-select" name="cg-book">
+              {books.map((book) => (
+                <option value={book.code} selected={book.code === selectedBook?.code}>{book.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <select id="cg-chapter-select" name="cg-chapter">
+              {Array.from({ length: selectedBook?.chapterCount ?? 1 }, (_, index) => {
+                const chapter = index + 1;
+                return <option value={chapter} selected={chapter === selectedChapter}>{chapter}</option>;
+              })}
+            </select>
+          </div>
+          <div>
+            <a id="cg-go-link" class="btn" href={`/games/cryptogram/${difficulty}/${selectedBook?.code ?? "gen"}/${selectedChapter}`}>
+              Go To Chapter
+            </a>
+          </div>
+        </div>
+
+        <p class="no-print">
+          <a href={`/games/word-search/${difficulty}/${chapterData.bookCode}/${chapterData.chapter}`}>
+            Switch to Word Search
+          </a>
+          {" | "}
+          <button type="button" onclick="window.print()">Print This Page</button>
+        </p>
+        <p class="no-print print-orientation-tip">Print tip: set orientation to Landscape for Cryptogram pages.</p>
+
+        <div class="field-grid no-print">
+          <div>
+            <label for="verse-select">Choose Verse</label>
+            <select id="verse-select">
+              {verseOptions.map((verse) => (
+                <option value={verse.key} selected={verse.key === defaultVerseKey}>
+                  {verse.reference}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <p><strong id="cryptogram-reference"></strong></p>
+        <div class="crypto-box">
+          <div class="crypto-key-wrap">
+            <h2 class="crypto-section-title">Letter Key</h2>
+            <div id="cryptogram-key" class="crypto-key-grid" aria-live="polite"></div>
+          </div>
+          <div class="crypto-quote-wrap">
+            <h2 class="crypto-section-title">Puzzle</h2>
+            <div id="cryptogram-text" class="crypto-worksheet" aria-live="polite"></div>
+          </div>
+        </div>
+        <p id="cryptogram-hint"></p>
+        <p class="print-credit">Provided Freely with Love from BibleGames.Church ❤️ Enjoy</p>
+      </>
+    ) : (
+      <>
+        <h1 class="title">Cryptogram</h1>
+        <p class="muted">This chapter was not found.</p>
+        <p><a href="/">Return to chapter picker</a></p>
+      </>
+    )}
+  </section>
+</Main>
+
+<style>
+  @media print {
+    @page {
+      size: landscape;
+      margin: 0.4in;
+    }
+  }
+</style>
+
+<script is:inline define:vars={{ verseOptions, defaultVerseKey, hintCount, difficulty, books, selectedBookCode, selectedChapter }}>
+  const verses = Array.isArray(verseOptions) ? verseOptions : [];
+  const defaultKey = String(defaultVerseKey || "");
+  const hintsToShow = Number(hintCount || 0);
+  const cgBooks = Array.isArray(books) ? books : [];
+  const cgDifficulty = String(difficulty || "medium");
+  const cgBookSelect = document.getElementById("cg-book-select");
+  const cgChapterSelect = document.getElementById("cg-chapter-select");
+  const cgGoLink = document.getElementById("cg-go-link");
+  const keepVerseLinks = Array.from(document.querySelectorAll("[data-keep-verse-link]"));
+  const verseSelect = document.getElementById("verse-select");
+  const referenceEl = document.getElementById("cryptogram-reference");
+  const cryptogramKeyEl = document.getElementById("cryptogram-key");
+  const cryptogramTextEl = document.getElementById("cryptogram-text");
+  const hintEl = document.getElementById("cryptogram-hint");
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
+  function buildCgChapterOptions(bookCode, keepChapter) {
+    if (!cgChapterSelect) {
+      return;
+    }
+    const active = cgBooks.find((book) => book.code === bookCode) ?? cgBooks[0];
+    const maxChapters = active?.chapterCount ?? 1;
+    const chapterToUse = Math.min(Math.max(Number(keepChapter || 1), 1), maxChapters);
+    cgChapterSelect.innerHTML = "";
+    for (let chapter = 1; chapter <= maxChapters; chapter += 1) {
+      const option = document.createElement("option");
+      option.value = String(chapter);
+      option.textContent = String(chapter);
+      if (chapter === chapterToUse) {
+        option.selected = true;
+      }
+      cgChapterSelect.appendChild(option);
+    }
+  }
+
+  function syncCgGoLink() {
+    if (!cgBookSelect || !cgChapterSelect || !cgGoLink) {
+      return;
+    }
+    const bookCode = cgBookSelect.value || "gen";
+    const chapter = cgChapterSelect.value || "1";
+    cgGoLink.setAttribute("href", `/games/cryptogram/${cgDifficulty}/${bookCode}/${chapter}`);
+  }
+
+  function withVerseQuery(href, verseKey) {
+    const url = new URL(href, window.location.origin);
+    if (verseKey) {
+      url.searchParams.set("verse", verseKey);
+    } else {
+      url.searchParams.delete("verse");
+    }
+    return `${url.pathname}${url.search}`;
+  }
+
+  function syncKeepVerseLinks() {
+    const verseKey = verseSelect && "value" in verseSelect ? verseSelect.value : "";
+    for (const link of keepVerseLinks) {
+      if (!(link instanceof HTMLAnchorElement)) {
+        continue;
+      }
+      link.setAttribute("href", withVerseQuery(link.getAttribute("href") || link.href, verseKey));
+    }
+  }
+
+  function displayReferenceForDifficulty(verseEntry) {
+    if (!verseEntry) {
+      return "";
+    }
+    if (difficulty === "hard" || difficulty === "medium") {
+      return "";
+    }
+    return "";
+  }
+
+  function buildBookHintWord(bookName) {
+    const normalized = String(bookName || "")
+      .toUpperCase()
+      .replace(/\s+/g, " ")
+      .trim();
+    return normalized || "BIBLE";
+  }
+
+  function buildPuzzleTextForDifficulty(verseEntry) {
+    const verseText = String(verseEntry?.text || "").trim();
+    const ref = `${verseEntry.chapter}:${verseEntry.verse}`;
+
+    if (difficulty === "easy") {
+      return verseText;
+    }
+
+    const bookHint = buildBookHintWord(verseEntry.bookName);
+    if (difficulty === "medium" || difficulty === "hard") {
+      return `${verseText} ${bookHint} ${ref}`.trim();
+    }
+
+    return `${verseText} ${bookHint}`.trim();
+  }
+
+  function createSeededRandom(seedText) {
+    let hash = 2166136261;
+    for (let i = 0; i < seedText.length; i += 1) {
+      hash ^= seedText.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return () => {
+      hash += 0x6d2b79f5;
+      let temp = Math.imul(hash ^ (hash >>> 15), 1 | hash);
+      temp ^= temp + Math.imul(temp ^ (temp >>> 7), 61 | temp);
+      return ((temp ^ (temp >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function shuffle(values, randomFn) {
+    const list = [...values];
+    for (let i = list.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(randomFn() * (i + 1));
+      [list[i], list[j]] = [list[j], list[i]];
+    }
+    return list;
+  }
+
+  function createCryptoMapping(verseKey, text) {
+    const random = createSeededRandom(`${verseKey}|${text}`);
+    const numbers = shuffle(
+      Array.from({ length: 26 }, (_, index) => index + 1),
+      random
+    );
+
+    const letterToNumber = new Map();
+    alphabet.forEach((letter, index) => {
+      letterToNumber.set(letter, numbers[index]);
+    });
+    return letterToNumber;
+  }
+
+  function buildHintLetters(verseKey, hintTotal) {
+    if (!hintTotal) {
+      return new Set();
+    }
+    const random = createSeededRandom(`${verseKey}|hint-letters`);
+    const picked = shuffle(alphabet, random).slice(0, hintTotal);
+    return new Set(picked);
+  }
+
+  function renderKeyGrid(mapping, hintLetters) {
+    if (!cryptogramKeyEl) {
+      return;
+    }
+    cryptogramKeyEl.textContent = "";
+
+    for (const letter of alphabet) {
+      const item = document.createElement("div");
+      item.className = "key-item";
+
+      const letterEl = document.createElement("span");
+      letterEl.className = "key-letter";
+      letterEl.textContent = letter;
+
+      const valueEl = document.createElement("span");
+      valueEl.className = "key-value";
+      const number = mapping.get(letter);
+      valueEl.textContent =
+        hintLetters.has(letter) && typeof number === "number" ? String(number).padStart(2, "0") : "";
+
+      item.appendChild(letterEl);
+      item.appendChild(valueEl);
+      cryptogramKeyEl.appendChild(item);
+    }
+  }
+
+  function createLetterCell(char, mapping, hintLetters) {
+    const upper = char.toUpperCase();
+    const code = String(mapping.get(upper)).padStart(2, "0");
+    const cell = document.createElement("span");
+    cell.className = "crypto-letter";
+
+    const answer = document.createElement("span");
+    answer.className = "crypto-answer";
+    answer.textContent = hintLetters.has(upper) ? upper : "";
+
+    const line = document.createElement("span");
+    line.className = "crypto-line";
+    line.textContent = "\u00a0";
+
+    const number = document.createElement("span");
+    number.className = "crypto-code";
+    number.textContent = code;
+
+    cell.append(answer, line, number);
+    return cell;
+  }
+
+  function createPunctuationCell(char) {
+    const cell = document.createElement("span");
+    cell.className = "crypto-punct";
+    cell.textContent = char;
+    return cell;
+  }
+
+  function renderCryptogram(verseEntry) {
+    if (!verseEntry || !referenceEl || !cryptogramTextEl || !hintEl) {
+      return;
+    }
+
+    const puzzleText = buildPuzzleTextForDifficulty(verseEntry);
+    const mapping = createCryptoMapping(verseEntry.key, puzzleText);
+    const hintLetters = buildHintLetters(verseEntry.key, hintsToShow);
+    const displayReference = displayReferenceForDifficulty(verseEntry);
+    referenceEl.textContent = displayReference;
+    referenceEl.style.display = displayReference ? "" : "none";
+    cryptogramTextEl.textContent = "";
+    renderKeyGrid(mapping, hintLetters);
+
+    const words = puzzleText.split(/\s+/).filter(Boolean);
+    for (const rawWord of words) {
+      const wordEl = document.createElement("span");
+      wordEl.className = "crypto-word";
+
+      for (const char of rawWord) {
+        if (/[A-Za-z]/.test(char)) {
+          wordEl.appendChild(createLetterCell(char, mapping, hintLetters));
+        } else {
+          wordEl.appendChild(createPunctuationCell(char));
+        }
+      }
+      cryptogramTextEl.appendChild(wordEl);
+    }
+
+    if (difficulty === "easy") {
+      const reveal = document.createElement("span");
+      reveal.className = "crypto-tail-reveal";
+      reveal.textContent = `${String(verseEntry.bookName || "").toUpperCase()} ${verseEntry.chapter}:${verseEntry.verse}`;
+      cryptogramTextEl.appendChild(reveal);
+    }
+
+    if (!hintsToShow) {
+      hintEl.textContent = "Write letters on the lines. Top key has no prefilled clues in hard mode.";
+      return;
+    }
+
+    hintEl.textContent = `Write letters on the lines. ${hintsToShow} key clue${hintsToShow > 1 ? "s are" : " is"} prefilled above.`;
+  }
+
+  function findVerseByKey(key) {
+    return verses.find((verse) => verse.key === key) ?? verses[0];
+  }
+
+  if (verseSelect) {
+    verseSelect.addEventListener("change", () => {
+      renderCryptogram(findVerseByKey(verseSelect.value));
+      syncKeepVerseLinks();
+    });
+  }
+
+  if (cgBookSelect) {
+    cgBookSelect.addEventListener("change", () => {
+      buildCgChapterOptions(cgBookSelect.value, 1);
+      syncCgGoLink();
+    });
+  }
+
+  if (cgChapterSelect) {
+    cgChapterSelect.addEventListener("change", syncCgGoLink);
+  }
+
+  buildCgChapterOptions(String(selectedBookCode || "gen"), Number(selectedChapter || 1));
+  syncCgGoLink();
+  syncKeepVerseLinks();
+  renderCryptogram(findVerseByKey(defaultKey));
+</script>

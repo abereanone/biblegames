@@ -1,0 +1,384 @@
+:root {
+  --bg: #f6f7eb;
+  --panel: #fffef9;
+  --ink: #15202b;
+  --accent: #3f7d58;
+  --accent-strong: #2f5e42;
+  --line: #d8decf;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  color: var(--ink);
+  background: radial-gradient(circle at 20% 10%, #edf5db 0%, #f6f7eb 45%, #f0ead6 100%);
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+}
+
+a {
+  color: var(--accent-strong);
+}
+
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.62rem;
+  text-decoration: none;
+  color: var(--ink);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+.brand-mark {
+  width: 6.3rem;
+  height: 6.3rem;
+  display: inline-flex;
+}
+
+.brand-mark svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.brand-text {
+  font-size: clamp(3rem, 5.4vw, 3.75rem);
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.brand-clean {
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: #1e4f37;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.brand-dot {
+  font-weight: 800;
+  color: #3b6a4d;
+  margin-left: 0.02em;
+}
+
+@media (max-width: 520px) {
+  .site-header {
+    padding: 0.8rem 0.9rem;
+  }
+
+  .brand-mark {
+    width: 3.3rem;
+    height: 3.3rem;
+  }
+
+  .brand-text {
+    font-size: 1.8rem;
+  }
+}
+
+.shell {
+  width: min(980px, 92vw);
+  margin: 1.5rem auto 2.5rem;
+}
+
+.site-footer {
+  text-align: center;
+  padding: 1.5rem 1rem 2.25rem;
+  border-top: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.footer-links {
+  margin: 0;
+  display: inline-flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.footer-copy {
+  margin: 0.5rem 0 0;
+  color: #48614f;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  box-shadow: 0 8px 22px rgba(25, 38, 22, 0.08);
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.6rem, 2.8vw, 2.2rem);
+}
+
+.subtitle {
+  margin-top: 0.5rem;
+  color: #32473a;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.chapter-jump-grid {
+  margin-top: 0.85rem;
+  align-items: end;
+}
+
+label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+select,
+.btn {
+  width: 100%;
+  font: inherit;
+  border-radius: 10px;
+  border: 1px solid #b8c4ad;
+  padding: 0.6rem 0.75rem;
+}
+
+button,
+.btn {
+  font: inherit;
+  border-radius: 10px;
+  border: 1px solid #b8c4ad;
+  padding: 0.6rem 0.75rem;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  font-weight: 700;
+}
+
+.btn.alt {
+  background: #fff;
+  color: var(--accent-strong);
+}
+
+.button-row {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.muted {
+  color: #41584a;
+}
+
+.print-orientation-tip {
+  margin: 0.45rem 0 0.7rem;
+  color: #31463a;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.word-grid-wrap {
+  overflow-x: auto;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.8rem;
+}
+
+.word-grid {
+  border-collapse: collapse;
+  margin: 0 auto;
+}
+
+.word-grid td {
+  width: 1.9rem;
+  height: 1.9rem;
+  border: 1px solid #becdb6;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.word-list {
+  columns: 2;
+}
+
+.word-list li {
+  margin-bottom: 0.25rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.crypto-box {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  padding: 0.9rem;
+}
+
+.crypto-section-title {
+  margin: 0 0 0.45rem;
+  font-size: 1.05rem;
+}
+
+.crypto-key-wrap {
+  margin-bottom: 0.9rem;
+}
+
+.crypto-key-grid {
+  display: grid;
+  grid-template-columns: repeat(13, minmax(0, 1fr));
+  gap: 0;
+  border: 1px solid #9eaa96;
+  background: #fff;
+}
+
+.key-item {
+  border-right: 1px solid #9eaa96;
+  border-bottom: 1px solid #9eaa96;
+  min-height: 2.75rem;
+  display: grid;
+  grid-template-rows: 1.2rem 1fr;
+}
+
+.key-item:nth-child(13n) {
+  border-right: 0;
+}
+
+.key-letter {
+  display: block;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border-bottom: 1px solid #9eaa96;
+  padding-top: 0.08rem;
+}
+
+.key-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.crypto-worksheet {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  row-gap: 0.55rem;
+  column-gap: 0.75rem;
+  padding-top: 0.25rem;
+}
+
+.crypto-tail-reveal {
+  display: inline-block;
+  margin-left: 0.55rem;
+  margin-bottom: 0.35rem;
+  font-size: 1.28rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #223a2d;
+  transform: translateY(-0.35rem);
+}
+
+.crypto-word {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 0.04rem;
+}
+
+.crypto-letter {
+  width: 1.7rem;
+  display: inline-grid;
+  grid-template-rows: 0.9rem 0.3rem 0.85rem;
+  justify-items: center;
+  align-items: end;
+}
+
+.crypto-answer {
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.crypto-line {
+  width: 1.45rem;
+  border-bottom: 1px solid #172219;
+}
+
+.crypto-code {
+  font-size: 0.67rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.crypto-punct {
+  display: inline-block;
+  margin: 0 0.12rem 0.95rem;
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.print-credit {
+  display: none;
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .shell {
+    width: 100%;
+    margin: 0;
+  }
+
+  .panel {
+    border: 0;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+  }
+
+  .crypto-key-grid {
+    grid-template-columns: repeat(26, minmax(0, 1fr));
+  }
+
+  .print-credit {
+    display: block;
+    margin-top: 0.55in;
+    text-align: center;
+    font-size: 11pt;
+    font-weight: 600;
+  }
+}

@@ -1,0 +1,180 @@
+---
+import Main from "@/layouts/Main.astro";
+import { getBibleData } from "@/lib/bible/data";
+
+const bible = await getBibleData();
+const books = bible.books;
+const firstBook = books[0];
+---
+
+<Main title="Bible Games | Chapter Picker">
+  <section class="panel">
+    <h1 class="title">Printable Bible Games</h1>
+    <p class="subtitle">
+      Pick a chapter, then print a Word Search or a Cryptogram.
+    </p>
+
+    {!bible.hasData ? (
+      <>
+        <p class="muted">
+          No local Bible copy found at <code>{bible.sourcePath}</code>.
+        </p>
+        <p class="muted">
+          Copy your BSB file into <code>data/bsb.json</code>, then start dev with <code>npm run dev</code>.
+        </p>
+      </>
+    ) : (
+      <>
+        <div class="field-grid">
+          <div>
+            <label for="book-select">Bible Book</label>
+            <select id="book-select" name="book">
+              {books.map((book) => (
+                <option value={book.code} data-chapters={book.chapterCount}>
+                  {book.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label for="chapter-select">Chapter</label>
+            <select id="chapter-select" name="chapter">
+              {Array.from({ length: firstBook?.chapterCount ?? 1 }, (_, index) => (
+                <option value={index + 1}>{index + 1}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label for="difficulty-select">Difficulty</label>
+            <select id="difficulty-select" name="difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <a id="word-search-link" class="btn" href={`/games/word-search/medium/${firstBook?.code ?? "gen"}/1`}>
+            Open Word Search
+          </a>
+          <a id="cryptogram-link" class="btn alt" href={`/games/cryptogram/medium/${firstBook?.code ?? "gen"}/1`}>
+            Open Cryptogram
+          </a>
+        </div>
+
+        <h2>Quick Start</h2>
+        <p class="muted">Jump into a random chapter using the selected difficulty.</p>
+        <div class="button-row">
+          <a
+            id="random-word-search-link"
+            class="btn"
+            href={`/games/word-search/medium/${firstBook?.code ?? "gen"}/1`}
+          >
+            Random Word Search
+          </a>
+          <a
+            id="random-cryptogram-link"
+            class="btn alt"
+            href={`/games/cryptogram/medium/${firstBook?.code ?? "gen"}/1`}
+          >
+            Random Cryptogram
+          </a>
+        </div>
+
+        <p class="muted">Tip: Use your browser print dialog to print each game page.</p>
+      </>
+    )}
+  </section>
+</Main>
+
+<script is:inline define:vars={{ books }}>
+  const safeBooks = Array.isArray(books) ? books : [];
+  const bookSelect = document.getElementById("book-select");
+  const chapterSelect = document.getElementById("chapter-select");
+  const difficultySelect = document.getElementById("difficulty-select");
+  const wordLink = document.getElementById("word-search-link");
+  const cryptLink = document.getElementById("cryptogram-link");
+  const randomWordLink = document.getElementById("random-word-search-link");
+  const randomCryptLink = document.getElementById("random-cryptogram-link");
+
+  function buildChapterOptions(chapterCount, selectedChapter = 1) {
+    if (!chapterSelect) {
+      return;
+    }
+    chapterSelect.innerHTML = "";
+    for (let chapter = 1; chapter <= chapterCount; chapter += 1) {
+      const option = document.createElement("option");
+      option.value = String(chapter);
+      option.textContent = String(chapter);
+      if (chapter === selectedChapter) {
+        option.selected = true;
+      }
+      chapterSelect.appendChild(option);
+    }
+  }
+
+  function syncLinks() {
+    if (!bookSelect || !chapterSelect || !wordLink || !cryptLink) {
+      return;
+    }
+    const book = bookSelect.value;
+    const chapter = chapterSelect.value || "1";
+    const difficulty = difficultySelect?.value || "medium";
+    wordLink.setAttribute("href", `/games/word-search/${difficulty}/${book}/${chapter}`);
+    cryptLink.setAttribute("href", `/games/cryptogram/${difficulty}/${book}/${chapter}`);
+  }
+
+  function randomChapterPath(game) {
+    const difficulty = difficultySelect?.value || "medium";
+    const pool = safeBooks.filter((entry) => Number(entry.chapterCount) > 0);
+    const chosenBook = pool[Math.floor(Math.random() * pool.length)] || pool[0];
+    if (!chosenBook) {
+      return `/`;
+    }
+    const chapter = 1 + Math.floor(Math.random() * chosenBook.chapterCount);
+    return `/games/${game}/${difficulty}/${chosenBook.code}/${chapter}`;
+  }
+
+  function syncQuickStartLinks() {
+    if (randomWordLink) {
+      randomWordLink.setAttribute("href", randomChapterPath("word-search"));
+    }
+    if (randomCryptLink) {
+      randomCryptLink.setAttribute("href", randomChapterPath("cryptogram"));
+    }
+  }
+
+  if (bookSelect) {
+    bookSelect.addEventListener("change", () => {
+      const selected = safeBooks.find((entry) => entry.code === bookSelect.value);
+      buildChapterOptions(selected?.chapterCount ?? 1, 1);
+      syncLinks();
+    });
+  }
+
+  if (chapterSelect) {
+    chapterSelect.addEventListener("change", syncLinks);
+  }
+
+  if (difficultySelect) {
+    difficultySelect.addEventListener("change", () => {
+      syncLinks();
+      syncQuickStartLinks();
+    });
+  }
+
+  if (randomWordLink) {
+    randomWordLink.addEventListener("click", () => {
+      randomWordLink.setAttribute("href", randomChapterPath("word-search"));
+    });
+  }
+
+  if (randomCryptLink) {
+    randomCryptLink.addEventListener("click", () => {
+      randomCryptLink.setAttribute("href", randomChapterPath("cryptogram"));
+    });
+  }
+
+  syncQuickStartLinks();
+</script>
