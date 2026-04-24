@@ -1,0 +1,32 @@
+{
+  "1": [
+    "Perfect. Solved in 1.",
+    "First-guess! Solved in 1.",
+    "Spot on. Solved in 1."
+  ],
+  "2": [
+    "Excellent. Solved in 2.",
+    "Very sharp. Solved in 2.",
+    "Strong read. Solved in 2."
+  ],
+  "3": [
+    "Well done. Solved in 3.",
+    "Good work. Solved in 3.",
+    "Nice deduction. Solved in 3."
+  ],
+  "4": [
+    "Steady work. Solved in 4.",
+    "You found it. Solved in 4.",
+    "Solid finish. Solved in 4."
+  ],
+  "5": [
+    "Close call. Solved in 5.",
+    "Good recovery. Solved in 5.",
+    "You got there! Solved in 5."
+  ],
+  "6": [
+    "You got it, eventually. Solved in 6.",
+    "Down to the wire. Solved in 6.",
+    "Final try finish. Solved in 6."
+  ]
+}

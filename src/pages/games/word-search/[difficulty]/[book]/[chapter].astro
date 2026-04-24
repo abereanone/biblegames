@@ -100,7 +100,7 @@ function puzzleSourceLine(value: PuzzleDifficulty, bookName: string, chapter: nu
       <>
         <h1 class="title">Word Search</h1>
         <p class="subtitle">{puzzleSourceLine(difficulty, chapterData.bookName, chapterData.chapter)} | {difficultyLabel}</p>
-        <p class="muted">{helperText(difficulty)}</p>
+        <p class="muted no-print">{helperText(difficulty)}</p>
 
         <div class="button-row no-print">
           {difficultyLinks.map((entry) => (
@@ -152,6 +152,15 @@ function puzzleSourceLine(value: PuzzleDifficulty, bookName: string, chapter: nu
         <p class="print-credit">
           Provided Freely with Love from BibleGames.Church <span aria-hidden="true">{"\u2764\uFE0F"}</span> Enjoy
         </p>
+        {difficulty === "medium" || difficulty === "hard" ? (
+          <>
+            <p id="ws-answer-upside" class="answer-upside">Answer: {chapterData.bookName} {chapterData.chapter}</p>
+            <label class="answer-toggle no-print" for="ws-answer-toggle">
+              <input id="ws-answer-toggle" type="checkbox" checked />
+              Show Verse
+            </label>
+          </>
+        ) : null}
       </>
     ) : (
       <>
@@ -166,8 +175,11 @@ function puzzleSourceLine(value: PuzzleDifficulty, bookName: string, chapter: nu
 <script is:inline define:vars={{ books, difficulty, selectedBookCode, selectedChapter }}>
   const wsBooks = Array.isArray(books) ? books : [];
   const wsDifficulty = String(difficulty || "medium");
+  const ANSWER_TOGGLE_STORAGE_KEY = "bg:show-verse";
   const wsBookSelect = document.getElementById("ws-book-select");
   const wsChapterSelect = document.getElementById("ws-chapter-select");
+  const wsAnswerToggle = document.getElementById("ws-answer-toggle");
+  const wsAnswerUpside = document.getElementById("ws-answer-upside");
 
   function buildWsChapterOptions(bookCode, keepChapter) {
     if (!wsChapterSelect) {
@@ -216,5 +228,40 @@ function puzzleSourceLine(value: PuzzleDifficulty, bookName: string, chapter: nu
     });
   }
 
+  function syncAnswerVisibility() {
+    if (!wsAnswerUpside) {
+      return;
+    }
+    const show = !wsAnswerToggle || !("checked" in wsAnswerToggle) ? true : wsAnswerToggle.checked;
+    wsAnswerUpside.style.display = show ? "" : "none";
+  }
+
+  function loadAnswerToggleState() {
+    if (!wsAnswerToggle || !("checked" in wsAnswerToggle)) {
+      return;
+    }
+    try {
+      const saved = localStorage.getItem(ANSWER_TOGGLE_STORAGE_KEY);
+      if (saved === "0" || saved === "1") {
+        wsAnswerToggle.checked = saved === "1";
+      }
+    } catch {
+      // Ignore storage errors and keep the markup default.
+    }
+  }
+
+  if (wsAnswerToggle) {
+    wsAnswerToggle.addEventListener("change", () => {
+      try {
+        localStorage.setItem(ANSWER_TOGGLE_STORAGE_KEY, wsAnswerToggle.checked ? "1" : "0");
+      } catch {
+        // Ignore storage errors; the current page state still updates.
+      }
+      syncAnswerVisibility();
+    });
+  }
+
   buildWsChapterOptions(String(selectedBookCode || "gen"), Number(selectedChapter || 1));
+  loadAnswerToggleState();
+  syncAnswerVisibility();
 </script>

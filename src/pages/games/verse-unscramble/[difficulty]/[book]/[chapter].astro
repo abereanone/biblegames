@@ -147,10 +147,13 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
               <li class="unscramble-item">
                 <div class="scramble-cell">{entry.scrambled}</div>
                 <div class="answer-cell">
-                  {puzzle.showFirstLetterHints ? <span class="hint-letter">{entry.firstLetter}</span> : null}
                   <span class={`answer-line ${entry.length >= 12 ? "ultra" : entry.length >= 10 ? "tight" : entry.length >= 8 ? "compact" : ""}`}>
-                    {Array.from({ length: entry.length }, () => (
-                      <span class="answer-slot" aria-hidden="true"></span>
+                    {Array.from({ length: entry.length }, (_, slotIndex) => (
+                      puzzle.showFirstLetterHints && slotIndex === entry.hintIndex ? (
+                        <span class="hint-slot">{entry.hintLetter}</span>
+                      ) : (
+                        <span class="answer-slot" aria-hidden="true"></span>
+                      )
                     ))}
                   </span>
                 </div>
@@ -196,6 +199,7 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
 >
   const vuBooks = Array.isArray(books) ? books : [];
   const vuDifficulty = String(difficulty || "medium");
+  const ANSWER_TOGGLE_STORAGE_KEY = "bg:show-verse";
   const vuVerses = Array.isArray(verseOptions) ? verseOptions : [];
   const vuInitialVerseKey = String(selectedVerseKey || "");
   const vuBookSelect = document.getElementById("vu-book-select");
@@ -312,12 +316,12 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
 
   function configForDifficulty() {
     if (vuDifficulty === "easy") {
-      return { maxWords: 12, showWordBank: true, showFirstLetterHints: true };
+      return { maxWords: 10, showWordBank: true, showFirstLetterHints: true };
     }
     if (vuDifficulty === "hard") {
-      return { maxWords: 18, showWordBank: false, showFirstLetterHints: false };
+      return { maxWords: 16, showWordBank: false, showFirstLetterHints: false };
     }
-    return { maxWords: 14, showWordBank: false, showFirstLetterHints: false };
+    return { maxWords: 12, showWordBank: true, showFirstLetterHints: false };
   }
 
   function buildPuzzleForVerse(verse) {
@@ -329,14 +333,20 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
         ? shuffle([...orderedWords], createSeededRandom(`${verse.key}|${vuDifficulty}|order`))
         : orderedWords;
     const random = createSeededRandom(`${verse.key}|${vuDifficulty}|unscramble`);
+    const hintRandom = createSeededRandom(`${verse.key}|${vuDifficulty}|hints`);
 
-    const items = puzzleWords.map((answer, index) => ({
-      index: index + 1,
-      answer,
-      scrambled: scrambleWord(answer, random),
-      length: answer.length,
-      firstLetter: answer[0] || "",
-    }));
+    const items = puzzleWords.map((answer, index) => {
+      const hintIndex = answer.length ? Math.floor(hintRandom() * answer.length) : 0;
+      return {
+        index: index + 1,
+        answer,
+        scrambled: scrambleWord(answer, random),
+        length: answer.length,
+        firstLetter: answer[0] || "",
+        hintIndex,
+        hintLetter: answer[hintIndex] || "",
+      };
+    });
 
     const bankWords = config.showWordBank
       ? shuffle(
@@ -348,8 +358,13 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
     return { config, items, bankWords };
   }
 
-  function createAnswerSlots(length) {
-    return Array.from({ length }, () => '<span class="answer-slot" aria-hidden="true"></span>').join("");
+  function createAnswerSlots(entry, showHint) {
+    return Array.from({ length: entry.length }, (_, index) => {
+      if (showHint && index === entry.hintIndex) {
+        return `<span class="hint-slot">${entry.hintLetter}</span>`;
+      }
+      return '<span class="answer-slot" aria-hidden="true"></span>';
+    }).join("");
   }
 
   function renderUnscramble(verse) {
@@ -361,16 +376,15 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
     const showFirstHints = built.config.showFirstLetterHints;
     const itemsHtml = built.items
       .map((entry) => {
-        const hintHtml = showFirstHints ? `<span class="hint-letter">${entry.firstLetter}</span>` : "";
         const lineClass =
           entry.length >= 12
             ? "answer-line ultra"
             : entry.length >= 10
               ? "answer-line tight"
               : entry.length >= 8
-                ? "answer-line compact"
-                : "answer-line";
-        return `<li class="unscramble-item"><div class="scramble-cell">${entry.scrambled}</div><div class="answer-cell">${hintHtml}<span class="${lineClass}">${createAnswerSlots(entry.length)}</span></div></li>`;
+              ? "answer-line compact"
+              : "answer-line";
+        return `<li class="unscramble-item"><div class="scramble-cell">${entry.scrambled}</div><div class="answer-cell"><span class="${lineClass}">${createAnswerSlots(entry, showFirstHints)}</span></div></li>`;
       })
       .join("");
 
@@ -391,6 +405,20 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
     }
     const show = !vuAnswerToggle || !("checked" in vuAnswerToggle) ? true : vuAnswerToggle.checked;
     vuAnswerUpside.style.display = show ? "" : "none";
+  }
+
+  function loadAnswerToggleState() {
+    if (!vuAnswerToggle || !("checked" in vuAnswerToggle)) {
+      return;
+    }
+    try {
+      const saved = localStorage.getItem(ANSWER_TOGGLE_STORAGE_KEY);
+      if (saved === "0" || saved === "1") {
+        vuAnswerToggle.checked = saved === "1";
+      }
+    } catch {
+      // Ignore storage errors and keep the markup default.
+    }
   }
 
   if (vuBookSelect) {
@@ -425,10 +453,18 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
   }
 
   if (vuAnswerToggle) {
-    vuAnswerToggle.addEventListener("change", syncAnswerVisibility);
+    vuAnswerToggle.addEventListener("change", () => {
+      try {
+        localStorage.setItem(ANSWER_TOGGLE_STORAGE_KEY, vuAnswerToggle.checked ? "1" : "0");
+      } catch {
+        // Ignore storage errors; the current page state still updates.
+      }
+      syncAnswerVisibility();
+    });
   }
 
   buildVuChapterOptions(String(selectedBookCode || "gen"), Number(selectedChapter || 1));
+  loadAnswerToggleState();
   const urlVerse = new URLSearchParams(window.location.search).get("verse") || "";
   const startVerse = findVerseByKey(urlVerse || vuInitialVerseKey);
   if (vuVerseSelect && startVerse) {
@@ -440,4 +476,3 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
   syncVerseLinks();
   syncAnswerVisibility();
 </script>
-

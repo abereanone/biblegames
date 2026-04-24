@@ -7,6 +7,8 @@ export type UnscrambleWord = {
   scrambled: string;
   length: number;
   firstLetter: string;
+  hintIndex: number;
+  hintLetter: string;
 };
 
 export type VerseUnscramblePuzzle = {
@@ -20,16 +22,16 @@ export type VerseUnscramblePuzzle = {
 };
 
 const DIFFICULTY_CONFIG = {
-  easy: { minLetters: 18, maxLetters: 65, maxWords: 12, showWordBank: true, showReference: true, showFirstLetterHints: true },
+  easy: { minLetters: 18, maxLetters: 65, maxWords: 10, showWordBank: true, showReference: true, showFirstLetterHints: true },
   medium: {
     minLetters: 32,
     maxLetters: 115,
-    maxWords: 14,
-    showWordBank: false,
+    maxWords: 12,
+    showWordBank: true,
     showReference: false,
     showFirstLetterHints: false,
   },
-  hard: { minLetters: 60, maxLetters: 190, maxWords: 18, showWordBank: false, showReference: false, showFirstLetterHints: false },
+  hard: { minLetters: 60, maxLetters: 170, maxWords: 16, showWordBank: false, showReference: false, showFirstLetterHints: false },
 } as const;
 
 function createSeededRandom(seedText: string): () => number {
@@ -98,14 +100,20 @@ export function buildVerseUnscramble(verse: BibleVerse, difficulty: PuzzleDiffic
       ? shuffle([...orderedWords], createSeededRandom(`${verse.key}|${difficulty}|order`))
       : orderedWords;
   const random = createSeededRandom(`${verse.key}|${difficulty}|unscramble`);
+  const hintRandom = createSeededRandom(`${verse.key}|${difficulty}|hints`);
 
-  const items = puzzleWords.map((answer, index) => ({
-    index: index + 1,
-    answer,
-    scrambled: scrambleWord(answer, random),
-    length: answer.length,
-    firstLetter: answer[0] ?? "",
-  }));
+  const items = puzzleWords.map((answer, index) => {
+    const hintIndex = answer.length ? Math.floor(hintRandom() * answer.length) : 0;
+    return {
+      index: index + 1,
+      answer,
+      scrambled: scrambleWord(answer, random),
+      length: answer.length,
+      firstLetter: answer[0] ?? "",
+      hintIndex,
+      hintLetter: answer[hintIndex] ?? "",
+    };
+  });
 
   const bankWords = config.showWordBank
     ? shuffle(
@@ -116,10 +124,10 @@ export function buildVerseUnscramble(verse: BibleVerse, difficulty: PuzzleDiffic
 
   const clueText =
     difficulty === "easy"
-      ? "Unscramble each word and write the answer. First letters are shown."
+      ? "Unscramble each word and write the answer. One letter is shown in its correct spot."
       : difficulty === "medium"
-        ? "Unscramble each word, then place words in the right verse order."
-        : "Unscramble each word with no word bank clues.";
+        ? "Unscramble each word, then use the word bank to place words in the right verse order."
+        : "Unscramble more words with no word bank clues.";
 
   return {
     words: items,

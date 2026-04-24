@@ -281,6 +281,10 @@ input,
   padding: 0.6rem 0.75rem;
 }
 
+input[type="checkbox"] {
+  width: auto;
+}
+
 button,
 .btn {
   font: inherit;
@@ -581,6 +585,18 @@ button:disabled {
   margin-right: 0.22rem;
 }
 
+.hint-slot {
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 1.05rem;
+  height: 1.2rem;
+  border-bottom: 1px solid #172219;
+  color: #7e461e;
+  font-weight: 800;
+  flex: 0 0 auto;
+}
+
 .answer-line {
   display: inline-flex;
   align-items: flex-end;
@@ -607,6 +623,10 @@ button:disabled {
   width: 0.82rem;
 }
 
+.answer-line.compact .hint-slot {
+  width: 0.82rem;
+}
+
 .answer-line.tight {
   gap: 0.14rem;
 }
@@ -615,11 +635,19 @@ button:disabled {
   width: 0.66rem;
 }
 
+.answer-line.tight .hint-slot {
+  width: 0.66rem;
+}
+
 .answer-line.ultra {
   gap: 0.1rem;
 }
 
 .answer-line.ultra .answer-slot {
+  width: 0.54rem;
+}
+
+.answer-line.ultra .hint-slot {
   width: 0.54rem;
 }
 
@@ -689,6 +717,10 @@ button:disabled {
   width: 100%;
 }
 
+.bible-wordle-guess-grid {
+  grid-template-columns: minmax(180px, 1.35fr) minmax(110px, 0.65fr) minmax(110px, 0.65fr) minmax(96px, 0.55fr);
+}
+
 .bible-wordle-verse {
   margin: 1rem 0;
   border-left: 0.35rem solid var(--game-accent);
@@ -712,6 +744,17 @@ button:disabled {
 
 .bible-wordle-status[data-tone="fail"] {
   color: #656565;
+}
+
+.bible-wordle-status[data-tone="warning"] {
+  color: #9a5b00;
+}
+
+.bible-wordle-direction {
+  min-height: 1.35rem;
+  margin: 0 0 0.65rem;
+  color: #314a20;
+  font-weight: 800;
 }
 
 .bible-wordle-board {
@@ -762,6 +805,12 @@ button:disabled {
   color: #1f1b10;
 }
 
+.bible-wordle-chip.close {
+  background: #d77a24;
+  border-color: #d77a24;
+  color: #fff;
+}
+
 .bible-wordle-chip.miss {
   background: #767676;
   border-color: #767676;
@@ -778,7 +827,19 @@ button:disabled {
   font-weight: 800;
 }
 
+.bible-wordle-stats {
+  margin-top: 0.8rem;
+}
+
+.bible-wordle-stats .muted {
+  margin: 0.35rem 0 0;
+}
+
 @media (max-width: 620px) {
+  .bible-wordle-guess-grid {
+    grid-template-columns: 1fr;
+  }
+
   .bible-wordle-row {
     grid-template-columns: 2rem minmax(0, 1.4fr) minmax(62px, 0.65fr) minmax(62px, 0.65fr);
     gap: 0.32rem;
@@ -863,6 +924,30 @@ button:disabled {
     font-weight: 600;
   }
 
+  .theme-word-search .subtitle {
+    margin: 0.04in 0 0.08in;
+  }
+
+  .theme-word-search .word-grid-wrap {
+    padding: 0.08in;
+  }
+
+  .theme-word-search .word-grid td {
+    width: 0.28in;
+    height: 0.28in;
+    font-size: 9pt;
+  }
+
+  .theme-word-search h2 {
+    margin: 0.12in 0 0.06in;
+    font-size: 14pt;
+  }
+
+  .theme-word-search .word-list {
+    margin: 0;
+    font-size: 10pt;
+  }
+
   .cryptogram-print-layout {
     display: flex;
     flex-direction: column;
@@ -905,9 +990,23 @@ button:disabled {
   }
 
   .theme-verse-unscramble .answer-upside {
-    margin: 0.04in 0 0;
     font-size: 0.6rem;
     line-height: 1.2;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .answer-upside {
+    position: fixed;
+    right: 0.25in;
+    bottom: 0.2in;
+    max-width: 4in;
+    margin: 0 !important;
+    text-align: right;
+    font-size: 0.6rem;
+    line-height: 1.2;
+    transform: rotate(180deg);
+    transform-origin: center;
     break-inside: avoid;
     page-break-inside: avoid;
   }

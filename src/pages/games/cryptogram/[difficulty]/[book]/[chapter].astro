@@ -218,6 +218,7 @@ const subtitleText = chapterData
 <script is:inline define:vars={{ verseOptions, defaultVerseKey, hintCount, difficulty, books, selectedBookCode, selectedChapter }}>
   const verses = Array.isArray(verseOptions) ? verseOptions : [];
   const defaultKey = String(defaultVerseKey || "");
+  const ANSWER_TOGGLE_STORAGE_KEY = "bg:show-verse";
   const hintsToShow = Number(hintCount || 0);
   const cgBooks = Array.isArray(books) ? books : [];
   const cgDifficulty = String(difficulty || "medium");
@@ -484,6 +485,20 @@ const subtitleText = chapterData
     cgAnswerUpside.style.display = show ? "" : "none";
   }
 
+  function loadAnswerToggleState() {
+    if (!cgAnswerToggle || !("checked" in cgAnswerToggle)) {
+      return;
+    }
+    try {
+      const saved = localStorage.getItem(ANSWER_TOGGLE_STORAGE_KEY);
+      if (saved === "0" || saved === "1") {
+        cgAnswerToggle.checked = saved === "1";
+      }
+    } catch {
+      // Ignore storage errors and keep the markup default.
+    }
+  }
+
   if (verseSelect) {
     verseSelect.addEventListener("change", () => {
       renderCryptogram(findVerseByKey(verseSelect.value));
@@ -499,7 +514,14 @@ const subtitleText = chapterData
   }
 
   if (cgAnswerToggle) {
-    cgAnswerToggle.addEventListener("change", syncAnswerVisibility);
+    cgAnswerToggle.addEventListener("change", () => {
+      try {
+        localStorage.setItem(ANSWER_TOGGLE_STORAGE_KEY, cgAnswerToggle.checked ? "1" : "0");
+      } catch {
+        // Ignore storage errors; the current page state still updates.
+      }
+      syncAnswerVisibility();
+    });
   }
 
   if (cgBookSelect) {
@@ -522,6 +544,7 @@ const subtitleText = chapterData
   }
 
   buildCgChapterOptions(String(selectedBookCode || "gen"), Number(selectedChapter || 1));
+  loadAnswerToggleState();
   syncKeepVerseLinks();
   renderCryptogram(findVerseByKey(defaultKey));
   syncAnswerVisibility();

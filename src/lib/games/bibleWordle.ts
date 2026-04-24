@@ -13,6 +13,7 @@ export type BibleWordleBook = {
 export type BibleWordleVerse = {
   key: string;
   reference: string;
+  order: number;
   bookCode: string;
   bookName: string;
   bookOrder: number;
@@ -28,6 +29,7 @@ export type BibleWordleData = {
 
 export function buildBibleWordleData(bible: BibleData): BibleWordleData {
   const verses: BibleWordleVerse[] = [];
+  let verseOrder = 0;
   const books: BibleWordleBook[] = bible.books.map((book, bookOrder) => {
     const chapters = Array.from({ length: book.chapterCount }, (_, index) => {
       const chapterNumber = index + 1;
@@ -38,6 +40,7 @@ export function buildBibleWordleData(bible: BibleData): BibleWordleData {
         verses.push({
           key: verse.key,
           reference: verse.reference,
+          order: verseOrder,
           bookCode: verse.bookCode,
           bookName: verse.bookName,
           bookOrder,
@@ -45,6 +48,7 @@ export function buildBibleWordleData(bible: BibleData): BibleWordleData {
           verse: verse.verse,
           text: verse.text,
         });
+        verseOrder += 1;
       }
 
       return {
