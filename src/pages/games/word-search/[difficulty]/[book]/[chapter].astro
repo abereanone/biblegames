@@ -88,6 +88,9 @@ function puzzleSourceLine(value: PuzzleDifficulty, bookName: string, chapter: nu
         >
           Verse Unscramble
         </a>
+        <a class="btn game-btn" data-game="bible-wordle" href="/games/bible-wordle">
+          Bible Wordle
+        </a>
       </div>
     </section>
   ) : null}
@@ -124,11 +127,8 @@ function puzzleSourceLine(value: PuzzleDifficulty, bookName: string, chapter: nu
           <div class="chapter-jump-spacer" aria-hidden="true"></div>
         </div>
         <div class="button-row no-print">
-          <button type="button" onclick="window.__bgPrint ? window.__bgPrint(event) : window.print()">Print This Page</button>
+          <button type="button" onclick="window.__bgPrint ? window.__bgPrint(event) : window.print()">Print this Puzzle!</button>
         </div>
-
-        <p class="no-print print-orientation-tip">Print tip: set orientation to Portrait for Word Search pages.</p>
-
         <div class="word-grid-wrap">
           <table class="word-grid" aria-label="Word search puzzle grid">
             <tbody>

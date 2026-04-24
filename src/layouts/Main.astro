@@ -13,9 +13,11 @@ const brandThemeClass = pathname.includes("/games/cryptogram/")
   ? "brand-cryptogram"
   : pathname.includes("/games/verse-unscramble/")
     ? "brand-verse-unscramble"
-    : pathname.includes("/games/word-search/")
-      ? "brand-word-search"
-      : "brand-default";
+    : pathname.includes("/games/bible-wordle")
+      ? "brand-bible-wordle"
+      : pathname.includes("/games/word-search/")
+        ? "brand-word-search"
+        : "brand-default";
 ---
 
 <!doctype html>

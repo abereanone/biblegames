@@ -1,0 +1,384 @@
+---
+import Main from "@/layouts/Main.astro";
+import { getBibleData } from "@/lib/bible/data";
+import { buildBibleWordleData } from "@/lib/games/bibleWordle";
+
+const bible = await getBibleData();
+const wordleData = buildBibleWordleData(bible);
+const firstBook = wordleData.books[0];
+---
+
+<Main title="Bible Wordle | Daily Bible Reference Game">
+  {bible.hasData ? (
+    <>
+      <section class="panel no-print game-nav-panel game-theme theme-bible-wordle">
+        <div class="button-row">
+          <a
+            class="btn game-btn"
+            data-game="word-search"
+            href={`/games/word-search/medium/${firstBook?.code ?? "gen"}/1`}
+          >
+            Word Search
+          </a>
+          <a
+            class="btn game-btn"
+            data-game="cryptogram"
+            href={`/games/cryptogram/medium/${firstBook?.code ?? "gen"}/1`}
+          >
+            Cryptogram
+          </a>
+          <a
+            class="btn game-btn"
+            data-game="verse-unscramble"
+            href={`/games/verse-unscramble/medium/${firstBook?.code ?? "gen"}/1`}
+          >
+            Verse Unscramble
+          </a>
+          <a class="btn game-btn" data-game="bible-wordle" href="/games/bible-wordle">
+            Bible Wordle
+          </a>
+        </div>
+      </section>
+
+      <section class="panel game-theme theme-bible-wordle bible-wordle-shell">
+        <h1 class="title">Bible Wordle</h1>
+        <p id="bw-puzzle-title" class="subtitle">Daily Reference</p>
+
+        <div class="field-grid bible-wordle-puzzle-grid no-print">
+          <div>
+            <label for="bw-puzzle-input">Puzzle #</label>
+            <input id="bw-puzzle-input" name="bw-puzzle" type="number" min="1" step="1" />
+          </div>
+          <div class="bible-wordle-control">
+            <button id="bw-open-puzzle" type="button">Open Puzzle</button>
+          </div>
+          <div class="bible-wordle-control">
+            <a id="bw-share-link" class="btn alt" href="/games/bible-wordle">Share Puzzle</a>
+          </div>
+        </div>
+
+        <blockquote id="bw-verse-text" class="bible-wordle-verse"></blockquote>
+
+        <div class="field-grid chapter-jump-grid no-print">
+          <div>
+            <label for="bw-book-select">Book</label>
+            <select id="bw-book-select" name="bw-book">
+              {wordleData.books.map((book) => (
+                <option value={book.code}>{book.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label for="bw-chapter-select">Chapter</label>
+            <select id="bw-chapter-select" name="bw-chapter"></select>
+          </div>
+          <div>
+            <label for="bw-verse-select">Verse</label>
+            <select id="bw-verse-select" name="bw-verse"></select>
+          </div>
+        </div>
+
+        <div class="button-row no-print">
+          <button id="bw-go-button" type="button">GO</button>
+        </div>
+
+        <p id="bw-status" class="bible-wordle-status" aria-live="polite"></p>
+
+        <div id="bw-guesses" class="bible-wordle-board" aria-label="Bible Wordle guesses">
+          {Array.from({ length: 5 }, (_, index) => (
+            <div class="bible-wordle-row" data-row={index}>
+              <span class="bible-wordle-number">{index + 1}</span>
+              <span class="bible-wordle-chip empty" data-cell="book">Book</span>
+              <span class="bible-wordle-chip empty" data-cell="chapter">Chapter</span>
+              <span class="bible-wordle-chip empty" data-cell="verse">Verse</span>
+            </div>
+          ))}
+        </div>
+
+        <p id="bw-answer" class="bible-wordle-answer no-print"></p>
+        <p class="muted no-print bible-wordle-legend">Green is exact. Yellow is within 2. Gray is outside that range.</p>
+      </section>
+    </>
+  ) : (
+    <section class="panel game-theme theme-bible-wordle">
+      <h1 class="title">Bible Wordle</h1>
+      <p class="muted">
+        No local Bible copy found at <code>{bible.sourcePath}</code>.
+      </p>
+      <p><a href="/">Return to chapter picker</a></p>
+    </section>
+  )}
+</Main>
+
+<script is:inline define:vars={{ books: wordleData.books, verses: wordleData.verses }}>
+  const MAX_GUESSES = 5;
+  const PUZZLE_EPOCH_UTC = Date.UTC(2026, 0, 1);
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const bwBooks = Array.isArray(books) ? books : [];
+  const bwVerses = Array.isArray(verses) ? verses : [];
+  const puzzleTitle = document.getElementById("bw-puzzle-title");
+  const puzzleInput = document.getElementById("bw-puzzle-input");
+  const openPuzzleButton = document.getElementById("bw-open-puzzle");
+  const shareLink = document.getElementById("bw-share-link");
+  const verseText = document.getElementById("bw-verse-text");
+  const bookSelect = document.getElementById("bw-book-select");
+  const chapterSelect = document.getElementById("bw-chapter-select");
+  const verseSelect = document.getElementById("bw-verse-select");
+  const goButton = document.getElementById("bw-go-button");
+  const statusEl = document.getElementById("bw-status");
+  const answerEl = document.getElementById("bw-answer");
+  const guessRows = Array.from(document.querySelectorAll(".bible-wordle-row"));
+
+  let activePuzzleNumber = 1;
+  let targetVerse = null;
+  let guessCount = 0;
+  let solved = false;
+
+  function todayPuzzleNumber() {
+    const today = new Date();
+    const localTodayUtc = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+    return Math.max(1, Math.floor((localTodayUtc - PUZZLE_EPOCH_UTC) / DAY_MS) + 1);
+  }
+
+  function normalizePuzzleNumber(value) {
+    const parsed = Number.parseInt(String(value ?? ""), 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : todayPuzzleNumber();
+  }
+
+  function puzzleNumberFromUrl() {
+    return normalizePuzzleNumber(new URLSearchParams(window.location.search).get("puzzle"));
+  }
+
+  function hashNumber(seedText) {
+    let hash = 2166136261;
+    for (let index = 0; index < seedText.length; index += 1) {
+      hash ^= seedText.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+    return hash >>> 0;
+  }
+
+  function pickVerse(puzzleNumber) {
+    if (!bwVerses.length) {
+      return null;
+    }
+    return bwVerses[hashNumber(`bible-wordle|${puzzleNumber}`) % bwVerses.length] ?? bwVerses[0];
+  }
+
+  function getBook(bookCode) {
+    return bwBooks.find((book) => book.code === bookCode) ?? bwBooks[0] ?? null;
+  }
+
+  function getChapterEntry(book, chapterNumber) {
+    return book?.chapters?.find((entry) => Number(entry.chapter) === Number(chapterNumber)) ?? book?.chapters?.[0] ?? null;
+  }
+
+  function buildVerseOptions(book, chapterNumber, keepVerse) {
+    if (!verseSelect) {
+      return;
+    }
+    const chapter = getChapterEntry(book, chapterNumber);
+    const verseNumbers = Array.isArray(chapter?.verseNumbers) ? chapter.verseNumbers : [];
+    const verseToUse = verseNumbers.includes(Number(keepVerse)) ? Number(keepVerse) : verseNumbers[0] ?? 1;
+    verseSelect.innerHTML = "";
+    for (const verseNumber of verseNumbers) {
+      const option = document.createElement("option");
+      option.value = String(verseNumber);
+      option.textContent = String(verseNumber);
+      option.selected = verseNumber === verseToUse;
+      verseSelect.appendChild(option);
+    }
+  }
+
+  function buildChapterOptions(bookCode, keepChapter, keepVerse) {
+    if (!chapterSelect) {
+      return;
+    }
+    const book = getBook(bookCode);
+    const chapters = Array.isArray(book?.chapters) ? book.chapters.filter((entry) => entry.verseNumbers.length) : [];
+    const requestedChapter = Number(keepChapter);
+    const chapterToUse = chapters.some((entry) => entry.chapter === requestedChapter)
+      ? requestedChapter
+      : chapters[0]?.chapter ?? 1;
+    chapterSelect.innerHTML = "";
+    for (const chapter of chapters) {
+      const option = document.createElement("option");
+      option.value = String(chapter.chapter);
+      option.textContent = String(chapter.chapter);
+      option.selected = chapter.chapter === chapterToUse;
+      chapterSelect.appendChild(option);
+    }
+    buildVerseOptions(book, chapterToUse, keepVerse);
+  }
+
+  function setStatus(message, tone = "") {
+    if (!statusEl) {
+      return;
+    }
+    statusEl.textContent = message;
+    statusEl.dataset.tone = tone;
+  }
+
+  function setAnswer(message) {
+    if (!answerEl) {
+      return;
+    }
+    answerEl.textContent = message;
+    answerEl.style.display = message ? "" : "none";
+  }
+
+  function resetBoard() {
+    guessCount = 0;
+    solved = false;
+    for (const row of guessRows) {
+      row.classList.remove("filled");
+      for (const chip of row.querySelectorAll(".bible-wordle-chip")) {
+        chip.className = "bible-wordle-chip empty";
+        chip.textContent = chip.getAttribute("data-cell") === "book" ? "Book" : chip.getAttribute("data-cell") === "chapter" ? "Chapter" : "Verse";
+      }
+    }
+    if (goButton) {
+      goButton.disabled = false;
+    }
+    setAnswer("");
+  }
+
+  function shareUrlForPuzzle(puzzleNumber) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("puzzle", String(puzzleNumber));
+    return `${url.pathname}${url.search}`;
+  }
+
+  function syncPuzzleHeader() {
+    if (puzzleTitle) {
+      puzzleTitle.textContent = `Bible Wordle #${activePuzzleNumber}`;
+    }
+    if (puzzleInput && "value" in puzzleInput) {
+      puzzleInput.value = String(activePuzzleNumber);
+    }
+    if (shareLink) {
+      const href = shareUrlForPuzzle(activePuzzleNumber);
+      shareLink.setAttribute("href", href);
+      shareLink.textContent = `Share #${activePuzzleNumber}`;
+    }
+  }
+
+  function startPuzzle(puzzleNumber, updateUrl = false) {
+    activePuzzleNumber = normalizePuzzleNumber(puzzleNumber);
+    targetVerse = pickVerse(activePuzzleNumber);
+    resetBoard();
+    syncPuzzleHeader();
+
+    if (updateUrl) {
+      history.pushState(null, "", shareUrlForPuzzle(activePuzzleNumber));
+    }
+
+    if (verseText) {
+      verseText.textContent = targetVerse?.text ?? "";
+    }
+
+    if (bookSelect && bwBooks[0]) {
+      bookSelect.value = bwBooks[0].code;
+      buildChapterOptions(bwBooks[0].code, 1, 1);
+    }
+
+    setStatus(`Guess 1 of ${MAX_GUESSES}.`, "");
+  }
+
+  function scoreClass(guessValue, targetValue) {
+    if (Number(guessValue) === Number(targetValue)) {
+      return "exact";
+    }
+    return Math.abs(Number(guessValue) - Number(targetValue)) <= 2 ? "near" : "miss";
+  }
+
+  function writeChip(row, cellName, text, className) {
+    const chip = row.querySelector(`[data-cell="${cellName}"]`);
+    if (!chip) {
+      return;
+    }
+    chip.className = `bible-wordle-chip ${className}`;
+    chip.textContent = text;
+  }
+
+  function selectedGuess() {
+    const book = getBook(bookSelect && "value" in bookSelect ? bookSelect.value : "");
+    return {
+      book,
+      chapter: Number(chapterSelect && "value" in chapterSelect ? chapterSelect.value : 1),
+      verse: Number(verseSelect && "value" in verseSelect ? verseSelect.value : 1),
+    };
+  }
+
+  function submitGuess() {
+    if (!targetVerse || solved || guessCount >= MAX_GUESSES) {
+      return;
+    }
+
+    const guess = selectedGuess();
+    const row = guessRows[guessCount];
+    if (!row || !guess.book) {
+      return;
+    }
+
+    row.classList.add("filled");
+    writeChip(row, "book", guess.book.name, scoreClass(guess.book.order, targetVerse.bookOrder));
+    writeChip(row, "chapter", String(guess.chapter), scoreClass(guess.chapter, targetVerse.chapter));
+    writeChip(row, "verse", String(guess.verse), scoreClass(guess.verse, targetVerse.verse));
+
+    guessCount += 1;
+    solved =
+      guess.book.code === targetVerse.bookCode &&
+      guess.chapter === targetVerse.chapter &&
+      guess.verse === targetVerse.verse;
+
+    if (solved) {
+      setStatus(`Solved in ${guessCount}.`, "success");
+      setAnswer(`Answer: ${targetVerse.reference}`);
+      if (goButton) {
+        goButton.disabled = true;
+      }
+      return;
+    }
+
+    if (guessCount >= MAX_GUESSES) {
+      setStatus("No guesses left.", "fail");
+      setAnswer(`Answer: ${targetVerse.reference}`);
+      if (goButton) {
+        goButton.disabled = true;
+      }
+      return;
+    }
+
+    setStatus(`Guess ${guessCount + 1} of ${MAX_GUESSES}.`, "");
+  }
+
+  if (bookSelect) {
+    bookSelect.addEventListener("change", () => {
+      buildChapterOptions(bookSelect.value, 1, 1);
+    });
+  }
+
+  if (chapterSelect) {
+    chapterSelect.addEventListener("change", () => {
+      const book = getBook(bookSelect && "value" in bookSelect ? bookSelect.value : "");
+      buildVerseOptions(book, chapterSelect.value, 1);
+    });
+  }
+
+  if (goButton) {
+    goButton.addEventListener("click", submitGuess);
+  }
+
+  if (openPuzzleButton) {
+    openPuzzleButton.addEventListener("click", () => {
+      startPuzzle(puzzleInput && "value" in puzzleInput ? puzzleInput.value : todayPuzzleNumber(), true);
+    });
+  }
+
+  window.addEventListener("popstate", () => {
+    startPuzzle(puzzleNumberFromUrl(), false);
+  });
+
+  startPuzzle(puzzleNumberFromUrl(), false);
+</script>

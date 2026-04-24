@@ -106,6 +106,9 @@ const subtitleText = chapterData
         >
           Verse Unscramble
         </a>
+        <a class="btn game-btn" data-game="bible-wordle" href="/games/bible-wordle">
+          Bible Wordle
+        </a>
       </div>
     </section>
   ) : null}
@@ -167,11 +170,9 @@ const subtitleText = chapterData
             </select>
           </div>
           <div class="cryptogram-print-control">
-            <button type="button" onclick="window.__bgPrint ? window.__bgPrint(event) : window.print()">Print This Page</button>
+            <button type="button" onclick="window.__bgPrint ? window.__bgPrint(event) : window.print()">Print this Puzzle!</button>
           </div>
         </div>
-        <p class="no-print print-orientation-tip">Print tip: set orientation to Landscape for Cryptogram pages.</p>
-
         <p><strong id="cryptogram-reference"></strong></p>
         <div class="crypto-box">
           <div class="crypto-key-wrap">

@@ -90,6 +90,9 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
         >
           Verse Unscramble
         </a>
+        <a class="btn game-btn" data-game="bible-wordle" href="/games/bible-wordle">
+          Bible Wordle
+        </a>
       </div>
     </section>
   ) : null}
@@ -133,7 +136,7 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
           </div>
         </div>
         <div class="button-row no-print">
-          <button type="button" onclick="window.__bgPrint ? window.__bgPrint(event) : window.print()">Print This Page</button>
+          <button type="button" onclick="window.__bgPrint ? window.__bgPrint(event) : window.print()">Print this Puzzle!</button>
         </div>
 
         <p class="no-print print-orientation-tip">Print tip: set orientation to Portrait for Verse Unscramble pages.</p>
