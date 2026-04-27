@@ -9,7 +9,7 @@ const wordleData = buildBibleWordleData(bible);
 const firstBook = wordleData.books[0];
 ---
 
-<Main title="Bible Wordle | Daily Bible Reference Game">
+<Main title="Bible Verse Wordle | Daily Bible Reference Game">
   {bible.hasData ? (
     <>
       <section class="panel no-print game-nav-panel game-theme theme-bible-wordle">
@@ -36,28 +36,32 @@ const firstBook = wordleData.books[0];
             Verse Unscramble
           </a>
           <a class="btn game-btn" data-game="bible-wordle" href="/games/bible-wordle">
-            Bible Wordle
+            Bible Verse Wordle
           </a>
         </div>
       </section>
 
       <section class="panel game-theme theme-bible-wordle bible-wordle-shell">
-        <h1 class="title">Bible Wordle</h1>
+        <h1 class="title">Bible Verse Wordle</h1>
         <p id="bw-puzzle-title" class="subtitle">Daily Reference</p>
 
         <div class="field-grid bible-wordle-puzzle-grid no-print">
-          <div>
-            <label for="bw-puzzle-input">Puzzle #</label>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <label for="bw-puzzle-input">Puzzle</label>
             <input id="bw-puzzle-input" name="bw-puzzle" type="number" min="1" step="1" />
+            <button id="bw-open-puzzle" type="button" style="height: 2.2em; box-sizing: border-box; line-height: 2.2em; padding: 0 0.5em;">Open</button>
           </div>
-          <div class="bible-wordle-control">
-            <button id="bw-open-puzzle" type="button">Open Puzzle</button>
+          <div>
+            <label class="answer-toggle bible-wordle-hard-mode" for="bw-hard-mode-toggle">
+              <input id="bw-hard-mode-toggle" type="checkbox" />
+              Hard Mode
+            </label>
           </div>
         </div>
 
         <blockquote id="bw-verse-text" class="bible-wordle-verse"></blockquote>
 
-        <div class="field-grid chapter-jump-grid bible-wordle-guess-grid no-print">
+        <div id="bw-guess-grid" class="field-grid chapter-jump-grid bible-wordle-guess-grid no-print">
           <div>
             <label for="bw-book-select">Book</label>
             <select id="bw-book-select" name="bw-book">
@@ -82,7 +86,7 @@ const firstBook = wordleData.books[0];
         <p id="bw-status" class="bible-wordle-status" aria-live="polite"></p>
         <p id="bw-direction-hint" class="bible-wordle-direction" aria-live="polite"></p>
 
-        <div id="bw-guesses" class="bible-wordle-board" aria-label="Bible Wordle guesses">
+        <div id="bw-guesses" class="bible-wordle-board" aria-label="Bible Verse Wordle guesses">
           {Array.from({ length: 6 }, (_, index) => (
             <div class="bible-wordle-row" data-row={index}>
               <span class="bible-wordle-number">{index + 1}</span>
@@ -101,18 +105,21 @@ const firstBook = wordleData.books[0];
         <div class="no-print bible-wordle-stats">
           <label class="answer-toggle" for="bw-stats-toggle">
             <input id="bw-stats-toggle" type="checkbox" />
-            Keep Bible Wordle stats on this device
+            Keep Bible Verse Wordle stats on this device
           </label>
           <p id="bw-stats-summary" class="muted"></p>
         </div>
-        <p class="muted no-print bible-wordle-legend">
-          Green is exact. Yellow is within 2. Orange is within 7. Gray is outside that range.
-        </p>
+        <div id="bw-legend" class="muted no-print bible-wordle-legend">
+          <span class="bible-wordle-legend-pill exact">Green is exact</span>
+          <span class="bible-wordle-legend-pill near">Yellow is within 2</span>
+          <span id="bw-close-legend" class="bible-wordle-legend-pill close">Orange is within 7</span>
+          <span class="bible-wordle-legend-pill miss">Gray is outside that range</span>
+        </div>
       </section>
     </>
   ) : (
     <section class="panel game-theme theme-bible-wordle">
-      <h1 class="title">Bible Wordle</h1>
+      <h1 class="title">Bible Verse Wordle</h1>
       <p class="muted">
         No local Bible copy found at <code>{bible.sourcePath}</code>.
       </p>
@@ -136,12 +143,15 @@ const firstBook = wordleData.books[0];
   const bookSelect = document.getElementById("bw-book-select");
   const chapterSelect = document.getElementById("bw-chapter-select");
   const verseSelect = document.getElementById("bw-verse-select");
+  const guessGrid = document.getElementById("bw-guess-grid");
   const goButton = document.getElementById("bw-go-button");
   const statusEl = document.getElementById("bw-status");
   const directionHintEl = document.getElementById("bw-direction-hint");
   const answerEl = document.getElementById("bw-answer");
   const hideAnswersWrap = document.getElementById("bw-hide-answers-wrap");
   const hideAnswersToggle = document.getElementById("bw-hide-answers-toggle");
+  const hardModeToggle = document.getElementById("bw-hard-mode-toggle");
+  const closeLegend = document.getElementById("bw-close-legend");
   const statsToggle = document.getElementById("bw-stats-toggle");
   const statsSummary = document.getElementById("bw-stats-summary");
   const guessRows = Array.from(document.querySelectorAll(".bible-wordle-row"));
@@ -152,6 +162,8 @@ const firstBook = wordleData.books[0];
   let solved = false;
   let submittedGuesses = new Set();
   let submittedGuessLabels = [];
+  let submittedGuessValues = [];
+  let lastDirectionMessage = "";
 
   function todayPuzzleNumber() {
     const today = new Date();
@@ -260,6 +272,7 @@ const firstBook = wordleData.books[0];
       return;
     }
     directionHintEl.textContent = message;
+    directionHintEl.hidden = !message;
   }
 
   function setHideAnswersAvailable(available) {
@@ -270,10 +283,32 @@ const firstBook = wordleData.books[0];
     if (!available) {
       hideAnswersToggle.checked = false;
     }
+    syncHiddenAnswers();
+  }
+
+  function hardModeEnabled() {
+    return Boolean(hardModeToggle && "checked" in hardModeToggle && hardModeToggle.checked);
+  }
+
+  function closeDistanceLimit() {
+    return hardModeEnabled() ? 4 : 7;
+  }
+
+  function syncHardModeText() {
+    if (!closeLegend) {
+      return;
+    }
+    closeLegend.textContent = `Orange is within ${closeDistanceLimit()}`;
   }
 
   function syncHiddenAnswers() {
     const shouldHide = Boolean(hideAnswersToggle && "checked" in hideAnswersToggle && hideAnswersToggle.checked);
+    if (guessGrid) {
+      guessGrid.hidden = shouldHide;
+    }
+    if (answerEl) {
+      answerEl.style.display = shouldHide || !answerEl.textContent ? "none" : "";
+    }
     guessRows.forEach((row, rowIndex) => {
       const labels = submittedGuessLabels[rowIndex];
       for (const chip of row.querySelectorAll(".bible-wordle-chip")) {
@@ -341,9 +376,6 @@ const firstBook = wordleData.books[0];
       ? `You already completed puzzle #${activePuzzleNumber} in ${result.guesses}.`
       : `You already completed puzzle #${activePuzzleNumber}.`;
     setStatus(message, result.solved ? "success" : "fail");
-    if (result.reference) {
-      setAnswer(`Answer: ${result.reference}`);
-    }
   }
 
   function savePuzzleResult(wasSolved) {
@@ -381,6 +413,8 @@ const firstBook = wordleData.books[0];
     solved = false;
     submittedGuesses = new Set();
     submittedGuessLabels = [];
+    submittedGuessValues = [];
+    lastDirectionMessage = "";
     for (const row of guessRows) {
       row.classList.remove("filled");
       for (const chip of row.querySelectorAll(".bible-wordle-chip")) {
@@ -404,7 +438,7 @@ const firstBook = wordleData.books[0];
 
   function syncPuzzleHeader() {
     if (puzzleTitle) {
-      puzzleTitle.textContent = `Bible Wordle #${activePuzzleNumber}`;
+      puzzleTitle.textContent = `Bible Verse Wordle #${activePuzzleNumber}`;
     }
     if (puzzleInput && "value" in puzzleInput) {
       puzzleInput.value = String(activePuzzleNumber);
@@ -443,7 +477,7 @@ const firstBook = wordleData.books[0];
     if (distance <= 2) {
       return "near";
     }
-    return distance <= 7 ? "close" : "miss";
+    return distance <= closeDistanceLimit() ? "close" : "miss";
   }
 
   function writeChip(row, cellName, text, className) {
@@ -453,6 +487,20 @@ const firstBook = wordleData.books[0];
     }
     chip.className = `bible-wordle-chip ${className}`;
     chip.textContent = text;
+  }
+
+  function syncSubmittedGuessRows() {
+    submittedGuessValues.forEach((values, rowIndex) => {
+      const row = guessRows[rowIndex];
+      const labels = submittedGuessLabels[rowIndex];
+      if (!row || !labels || !values || !targetVerse) {
+        return;
+      }
+      writeChip(row, "book", labels.book, scoreClass(values.bookOrder, targetVerse.bookOrder));
+      writeChip(row, "chapter", labels.chapter, scoreClass(values.chapter, targetVerse.chapter));
+      writeChip(row, "verse", labels.verse, scoreClass(values.verse, targetVerse.verse));
+    });
+    syncHiddenAnswers();
   }
 
   function selectedGuess() {
@@ -504,6 +552,11 @@ const firstBook = wordleData.books[0];
       chapter: String(guess.chapter),
       verse: String(guess.verse),
     };
+    submittedGuessValues[guessCount] = {
+      bookOrder: guess.book.order,
+      chapter: guess.chapter,
+      verse: guess.verse,
+    };
     writeChip(row, "book", guess.book.name, scoreClass(guess.book.order, targetVerse.bookOrder));
     writeChip(row, "chapter", String(guess.chapter), scoreClass(guess.chapter, targetVerse.chapter));
     writeChip(row, "verse", String(guess.verse), scoreClass(guess.verse, targetVerse.verse));
@@ -539,7 +592,11 @@ const firstBook = wordleData.books[0];
     }
 
     const direction = compareGuessToTarget(guess);
-    setDirectionHint(direction < 0 ? "Your guess is BEFORE the hidden reference." : "Your guess is AFTER the hidden reference.");
+    lastDirectionMessage =
+      direction < 0
+        ? "The hidden verse comes AFTER your last guess."
+        : "The hidden verse comes BEFORE your last guess.";
+    setDirectionHint(hardModeEnabled() ? "" : lastDirectionMessage);
     setStatus(`Guess ${guessCount + 1} of ${MAX_GUESSES}.`, "");
   }
 
@@ -565,6 +622,14 @@ const firstBook = wordleData.books[0];
 
   if (hideAnswersToggle) {
     hideAnswersToggle.addEventListener("change", syncHiddenAnswers);
+  }
+
+  if (hardModeToggle) {
+    hardModeToggle.addEventListener("change", () => {
+      syncHardModeText();
+      syncSubmittedGuessRows();
+      setDirectionHint(hardModeEnabled() ? "" : lastDirectionMessage);
+    });
   }
 
   if (openPuzzleButton) {
@@ -607,5 +672,6 @@ const firstBook = wordleData.books[0];
     startPuzzle(puzzleNumberFromUrl(), false);
   });
 
+  syncHardModeText();
   startPuzzle(puzzleNumberFromUrl(), false);
 </script>

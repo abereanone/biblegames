@@ -11,7 +11,7 @@ const firstBook = books[0];
   <section class="panel">
     <h1 class="title">Printable Bible Games</h1>
     <p class="subtitle">
-      Pick a chapter, then print a Word Search, Cryptogram, Verse Unscramble, or play Bible Wordle.
+      Pick a chapter, then print a Word Search, Cryptogram, Verse Unscramble, or play Bible Verse Wordle.
     </p>
 
     {!bible.hasData ? (
@@ -56,16 +56,16 @@ const firstBook = books[0];
 
         <div class="button-row">
           <a id="word-search-link" class="btn game-btn" data-game="word-search" href={`/games/word-search/medium/${firstBook?.code ?? "gen"}/1`}>
-            Open Word Search
+            Word Search
           </a>
           <a id="cryptogram-link" class="btn game-btn" data-game="cryptogram" href={`/games/cryptogram/medium/${firstBook?.code ?? "gen"}/1`}>
-            Open Cryptogram
+            Cryptogram
           </a>
           <a id="verse-unscramble-link" class="btn game-btn" data-game="verse-unscramble" href={`/games/verse-unscramble/medium/${firstBook?.code ?? "gen"}/1`}>
-            Open Verse Unscramble
+            Verse Unscramble
           </a>
           <a class="btn game-btn" data-game="bible-wordle" href="/games/bible-wordle">
-            Open Bible Wordle
+            Bible Verse Wordle
           </a>
         </div>
 
@@ -97,7 +97,7 @@ const firstBook = books[0];
             Random Verse Unscramble
           </a>
           <a class="btn game-btn" data-game="bible-wordle" href="/games/bible-wordle">
-            Bible Wordle Today
+            Bible Verse Wordle Today
           </a>
         </div>
 
