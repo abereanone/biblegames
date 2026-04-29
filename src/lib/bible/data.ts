@@ -1,6 +1,5 @@
 import { access, readFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { BIBLE_BOOKS, BOOKS_BY_CODE, type Testament } from "./books";
 
 type RawVerse = {
@@ -43,8 +42,7 @@ export type BibleData = {
   chapterMap: Map<string, BibleChapter>;
 };
 
-const moduleDir = path.dirname(fileURLToPath(import.meta.url));
-const projectRoot = path.resolve(moduleDir, "../../..");
+const projectRoot = process.cwd();
 const confessionSourceConfigPath = path.resolve(
   projectRoot,
   "..",
