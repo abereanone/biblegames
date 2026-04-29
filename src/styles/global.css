@@ -166,6 +166,25 @@ a:focus-visible {
   font-weight: 700;
 }
 
+.install-help {
+  width: min(620px, 92vw);
+  margin: 0.85rem auto 0;
+  color: #ecf4df;
+  text-align: left;
+}
+
+.install-help summary {
+  cursor: pointer;
+  color: var(--brand-footer-link);
+  font-weight: 800;
+  text-align: center;
+}
+
+.install-help p {
+  margin: 0.55rem 0 0;
+  line-height: 1.45;
+}
+
 body.brand-cryptogram {
   --brand-header-top: #2f5b9f;
   --brand-header-bottom: #1f3f71;

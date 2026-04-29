@@ -9,6 +9,9 @@ type Props = {
 
 const { title = "Bible Games" } = Astro.props;
 const pathname = Astro.url.pathname;
+const canonicalUrl = new URL(pathname, Astro.site ?? Astro.url.origin);
+const socialImageUrl = new URL("/biblegameslogo.png", canonicalUrl);
+const description = "Printable Bible games and a daily Bible Verse Wordle.";
 const brandThemeClass = pathname.includes("/games/cryptogram/")
   ? "brand-cryptogram"
   : pathname.includes("/games/verse-unscramble/")
@@ -25,9 +28,32 @@ const brandThemeClass = pathname.includes("/games/cryptogram/")
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f7f2e7" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Bible Games" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl.href} />
+    <meta property="og:site_name" content="BibleGames.Church" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl.href} />
+    <meta property="og:image" content={socialImageUrl.href} />
+    <meta property="og:image:secure_url" content={socialImageUrl.href} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1024" />
+    <meta property="og:image:height" content="1024" />
+    <meta property="og:image:alt" content="BibleGames.Church logo" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImageUrl.href} />
+    <meta name="twitter:image:alt" content="BibleGames.Church logo" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="shortcut icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <title>{title}</title>
   </head>
   <body class={brandThemeClass}>
@@ -101,6 +127,14 @@ const brandThemeClass = pathname.includes("/games/cryptogram/")
         window.addEventListener("beforeprint", applyPrintFit);
         window.addEventListener("afterprint", clearPrintFit);
       })();
+
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("/sw.js").catch(() => {
+            // The site still works without offline caching.
+          });
+        });
+      }
     </script>
   </body>
 </html>
