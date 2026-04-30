@@ -69,7 +69,17 @@ async function fileExists(targetPath: string): Promise<boolean> {
 
 function normalizeBookCode(code: string): string | null {
   const normalized = String(code ?? "").trim().toLowerCase();
-  return BOOKS_BY_CODE.has(normalized) ? normalized : null;
+
+  const byInternalCode = BOOKS_BY_CODE.get(normalized);
+  if (byInternalCode) {
+    return byInternalCode.code;
+  }
+
+  const byBsbCode = BIBLE_BOOKS.find(
+    (book) => book.bsbCode.toLowerCase() === normalized
+  );
+
+  return byBsbCode?.code ?? null;
 }
 
 async function resolveBiblePath(): Promise<string | null> {
@@ -90,7 +100,7 @@ async function resolveBiblePath(): Promise<string | null> {
     }
   }
 
-  candidates.push(path.resolve(projectRoot, "..", "catechize.ing", "bsb-data-pipeline", "bsb.json"));
+  candidates.push(path.resolve(projectRoot, "..", "biblegames.church", "bsb-data-pipeline", "bsb.json"));
 
   for (const candidate of candidates) {
     if (await fileExists(candidate)) {
