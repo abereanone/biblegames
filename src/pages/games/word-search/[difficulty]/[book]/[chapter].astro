@@ -1,7 +1,7 @@
 ---
 import Main from "@/layouts/Main.astro";
 import { getBibleData, getChapter } from "@/lib/bible/data";
-import { DIFFICULTIES, parseDifficulty, type PuzzleDifficulty } from "@/lib/games/difficulty";
+import { DIFFICULTIES, DIFFICULTY_LABELS, parseDifficulty, type PuzzleDifficulty } from "@/lib/games/difficulty";
 import { buildWordSearch } from "@/lib/games/wordSearch";
 
 export async function getStaticPaths() {
@@ -35,10 +35,10 @@ const title = chapterData
   ? `Word Search (${difficulty}) | ${chapterData.bookName} ${chapterData.chapter}`
   : "Word Search | Chapter Not Found";
 
-const difficultyLabel = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+const difficultyLabel = DIFFICULTY_LABELS[difficulty];
 const difficultyLinks = DIFFICULTIES.map((value) => ({
   value,
-  label: value.charAt(0).toUpperCase() + value.slice(1),
+  label: DIFFICULTY_LABELS[value],
   href: chapterData ? `/games/word-search/${value}/${chapterData.bookCode}/${chapterData.chapter}` : "/",
 }));
 

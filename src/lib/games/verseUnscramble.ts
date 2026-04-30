@@ -22,16 +22,15 @@ export type VerseUnscramblePuzzle = {
 };
 
 const DIFFICULTY_CONFIG = {
-  easy: { minLetters: 18, maxLetters: 65, maxWords: 10, showWordBank: true, showReference: true, showFirstLetterHints: true },
+  easy: { minLetters: 18, maxLetters: 65, showWordBank: true, showReference: true, showFirstLetterHints: true },
   medium: {
     minLetters: 32,
     maxLetters: 115,
-    maxWords: 12,
     showWordBank: true,
     showReference: false,
     showFirstLetterHints: false,
   },
-  hard: { minLetters: 60, maxLetters: 170, maxWords: 16, showWordBank: false, showReference: false, showFirstLetterHints: false },
+  hard: { minLetters: 60, maxLetters: 170, showWordBank: false, showReference: false, showFirstLetterHints: false },
 } as const;
 
 function createSeededRandom(seedText: string): () => number {
@@ -93,7 +92,7 @@ export function pickUnscrambleVerse(verses: BibleVerse[], difficulty: PuzzleDiff
 
 export function buildVerseUnscramble(verse: BibleVerse, difficulty: PuzzleDifficulty): VerseUnscramblePuzzle {
   const config = DIFFICULTY_CONFIG[difficulty];
-  const words = normalizeWords(verse.text).slice(0, config.maxWords);
+  const words = normalizeWords(verse.text);
   const orderedWords = words.length ? words : ["BIBLE", "VERSE", "TRUTH"];
   const puzzleWords =
     difficulty === "medium" || difficulty === "hard"

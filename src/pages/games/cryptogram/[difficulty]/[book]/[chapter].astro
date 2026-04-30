@@ -1,7 +1,7 @@
 ---
 import Main from "@/layouts/Main.astro";
 import { getBibleData, getChapter } from "@/lib/bible/data";
-import { DIFFICULTIES, parseDifficulty } from "@/lib/games/difficulty";
+import { DIFFICULTIES, DIFFICULTY_LABELS, parseDifficulty } from "@/lib/games/difficulty";
 import { pickDefaultVerse } from "@/lib/games/cryptogram";
 
 export async function getStaticPaths() {
@@ -49,10 +49,10 @@ const title = chapterData
   ? `Cryptogram (${difficulty}) | ${chapterData.bookName} ${chapterData.chapter}`
   : "Cryptogram | Chapter Not Found";
 
-const difficultyLabel = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+const difficultyLabel = DIFFICULTY_LABELS[difficulty];
 const difficultyLinks = DIFFICULTIES.map((value) => ({
   value,
-  label: value.charAt(0).toUpperCase() + value.slice(1),
+  label: DIFFICULTY_LABELS[value],
   href: chapterData
     ? `/games/cryptogram/${value}/${chapterData.bookCode}/${chapterData.chapter}${
         defaultVerseKey ? `?verse=${encodeURIComponent(defaultVerseKey)}` : ""

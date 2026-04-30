@@ -1,6 +1,7 @@
 ---
 import Main from "@/layouts/Main.astro";
 import { getBibleData } from "@/lib/bible/data";
+import { DIFFICULTIES, DIFFICULTY_LABELS } from "@/lib/games/difficulty";
 
 const bible = await getBibleData();
 const books = bible.books;
@@ -47,9 +48,11 @@ const firstBook = books[0];
           <div>
             <label for="difficulty-select">Difficulty</label>
             <select id="difficulty-select" name="difficulty">
-              <option value="easy">Easy</option>
-              <option value="medium" selected>Medium</option>
-              <option value="hard">Hard</option>
+              {DIFFICULTIES.map((difficulty) => (
+                <option value={difficulty} selected={difficulty === "medium"}>
+                  {DIFFICULTY_LABELS[difficulty]}
+                </option>
+              ))}
             </select>
           </div>
         </div>

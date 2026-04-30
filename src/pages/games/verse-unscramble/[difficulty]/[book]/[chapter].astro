@@ -1,7 +1,7 @@
 ---
 import Main from "@/layouts/Main.astro";
 import { getBibleData, getChapter } from "@/lib/bible/data";
-import { DIFFICULTIES, parseDifficulty } from "@/lib/games/difficulty";
+import { DIFFICULTIES, DIFFICULTY_LABELS, parseDifficulty } from "@/lib/games/difficulty";
 import { buildVerseUnscramble, pickUnscrambleVerse } from "@/lib/games/verseUnscramble";
 
 export async function getStaticPaths() {
@@ -53,7 +53,7 @@ const title = chapterData
 
 const difficultyLinks = DIFFICULTIES.map((value) => ({
   value,
-  label: value.charAt(0).toUpperCase() + value.slice(1),
+  label: DIFFICULTY_LABELS[value],
   href: chapterData
     ? `/games/verse-unscramble/${value}/${chapterData.bookCode}/${chapterData.chapter}${
         selectedVerseKey ? `?verse=${encodeURIComponent(selectedVerseKey)}` : ""
@@ -316,17 +316,17 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
 
   function configForDifficulty() {
     if (vuDifficulty === "easy") {
-      return { maxWords: 10, showWordBank: true, showFirstLetterHints: true };
+      return { showWordBank: true, showFirstLetterHints: true };
     }
     if (vuDifficulty === "hard") {
-      return { maxWords: 16, showWordBank: false, showFirstLetterHints: false };
+      return { showWordBank: false, showFirstLetterHints: false };
     }
-    return { maxWords: 12, showWordBank: true, showFirstLetterHints: false };
+    return { showWordBank: true, showFirstLetterHints: false };
   }
 
   function buildPuzzleForVerse(verse) {
     const config = configForDifficulty();
-    const words = normalizeWords(verse.text).slice(0, config.maxWords);
+    const words = normalizeWords(verse.text);
     const orderedWords = words.length ? words : ["BIBLE", "VERSE", "TRUTH"];
     const puzzleWords =
       vuDifficulty === "medium" || vuDifficulty === "hard"
