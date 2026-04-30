@@ -114,12 +114,10 @@ export function buildVerseUnscramble(verse: BibleVerse, difficulty: PuzzleDiffic
     };
   });
 
-  const bankWords = config.showWordBank
-    ? shuffle(
-        items.map((item) => item.answer),
-        createSeededRandom(`${verse.key}|${difficulty}|bank`)
-      )
-    : [];
+  const bankWords = shuffle(
+    items.map((item) => item.answer),
+    createSeededRandom(`${verse.key}|${difficulty}|bank`)
+  );
 
   const clueText =
     difficulty === "easy"

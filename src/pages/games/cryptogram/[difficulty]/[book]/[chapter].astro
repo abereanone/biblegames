@@ -25,10 +25,17 @@ const rawBook = String(Astro.params.book ?? "").toLowerCase();
 const rawChapter = Number(Astro.params.chapter ?? "0");
 const chapterData = await getChapter(rawBook, rawChapter);
 const requestedVerseKey = String(Astro.url.searchParams.get("verse") ?? "").trim();
+const rawTestamentFilter = String(Astro.url.searchParams.get("testament") ?? "all").toLowerCase();
+const testamentFilter = rawTestamentFilter === "ot" || rawTestamentFilter === "nt" ? rawTestamentFilter : "all";
 const bibleData = await getBibleData();
 const books = bibleData.books;
 const selectedBookCode = chapterData?.bookCode ?? rawBook;
 const selectedBook = books.find((book) => book.code === selectedBookCode) ?? books[0];
+const filteredBooks =
+  testamentFilter === "ot" || testamentFilter === "nt"
+    ? books.filter((book) => book.testament === testamentFilter)
+    : books;
+const selectedFilteredBook = filteredBooks.find((book) => book.code === selectedBookCode) ?? filteredBooks[0] ?? selectedBook;
 const selectedChapter = chapterData?.chapter ?? 1;
 
 const verseOptions = chapterData
@@ -54,9 +61,17 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
   value,
   label: DIFFICULTY_LABELS[value],
   href: chapterData
-    ? `/games/cryptogram/${value}/${chapterData.bookCode}/${chapterData.chapter}${
-        defaultVerseKey ? `?verse=${encodeURIComponent(defaultVerseKey)}` : ""
-      }`
+    ? (() => {
+        const params = new URLSearchParams();
+        if (defaultVerseKey) {
+          params.set("verse", defaultVerseKey);
+        }
+        if (testamentFilter !== "all") {
+          params.set("testament", testamentFilter);
+        }
+        const query = params.toString();
+        return `/games/cryptogram/${value}/${chapterData.bookCode}/${chapterData.chapter}${query ? `?${query}` : ""}`;
+      })()
     : "/",
 }));
 
@@ -132,17 +147,24 @@ const subtitleText = chapterData
           ))}
         </div>
 
-        <div class="field-grid chapter-jump-grid no-print">
+        <div class="field-grid chapter-jump-grid cryptogram-picker-row no-print">
+          <div>
+            <select id="cg-testament-select" name="cg-testament" aria-label="Filter books by testament">
+              <option value="all" selected={testamentFilter === "all"}>ALL</option>
+              <option value="ot" selected={testamentFilter === "ot"}>OT</option>
+              <option value="nt" selected={testamentFilter === "nt"}>NT</option>
+            </select>
+          </div>
           <div>
             <select id="cg-book-select" name="cg-book">
-              {books.map((book) => (
-                <option value={book.code} selected={book.code === selectedBook?.code}>{book.name}</option>
+              {filteredBooks.map((book) => (
+                <option value={book.code} selected={book.code === selectedFilteredBook?.code}>{book.name}</option>
               ))}
             </select>
           </div>
           <div>
             <select id="cg-chapter-select" name="cg-chapter">
-              {Array.from({ length: selectedBook?.chapterCount ?? 1 }, (_, index) => {
+              {Array.from({ length: selectedFilteredBook?.chapterCount ?? 1 }, (_, index) => {
                 const chapter = index + 1;
                 return <option value={chapter} selected={chapter === selectedChapter}>{chapter}</option>;
               })}
@@ -215,13 +237,15 @@ const subtitleText = chapterData
   }
 </style>
 
-<script is:inline define:vars={{ verseOptions, defaultVerseKey, hintCount, difficulty, books, selectedBookCode, selectedChapter }}>
+<script is:inline define:vars={{ verseOptions, defaultVerseKey, hintCount, difficulty, books, selectedBookCode, selectedChapter, testamentFilter }}>
   const verses = Array.isArray(verseOptions) ? verseOptions : [];
   const defaultKey = String(defaultVerseKey || "");
   const ANSWER_TOGGLE_STORAGE_KEY = "bg:show-verse";
   const hintsToShow = Number(hintCount || 0);
   const cgBooks = Array.isArray(books) ? books : [];
   const cgDifficulty = String(difficulty || "medium");
+  const cgInitialTestamentFilter = String(testamentFilter || "all");
+  const cgTestamentSelect = document.getElementById("cg-testament-select");
   const cgBookSelect = document.getElementById("cg-book-select");
   const cgChapterSelect = document.getElementById("cg-chapter-select");
   const keepVerseLinks = Array.from(document.querySelectorAll("[data-keep-verse-link]"));
@@ -234,6 +258,48 @@ const subtitleText = chapterData
   const cryptogramTextEl = document.getElementById("cryptogram-text");
   const hintEl = document.getElementById("cryptogram-hint");
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
+  function normalizeTestamentFilter(value) {
+    return value === "ot" || value === "nt" ? value : "all";
+  }
+
+  function currentTestamentFilter() {
+    const fromUrl = new URLSearchParams(window.location.search).get("testament");
+    return normalizeTestamentFilter(fromUrl || cgInitialTestamentFilter);
+  }
+
+  function filteredCgBooks(testamentOverride) {
+    const testament = normalizeTestamentFilter(
+      testamentOverride || (cgTestamentSelect && "value" in cgTestamentSelect ? cgTestamentSelect.value : currentTestamentFilter())
+    );
+    if (testament === "ot" || testament === "nt") {
+      return cgBooks.filter((book) => book.testament === testament);
+    }
+    return cgBooks;
+  }
+
+  function buildCgBookOptions(keepBookCode, testamentOverride) {
+    if (!cgBookSelect) {
+      return "";
+    }
+    const filteredBooks = filteredCgBooks(testamentOverride);
+    const fallback = filteredBooks[0] ?? cgBooks[0];
+    const hasKeepBook = filteredBooks.some((book) => book.code === keepBookCode);
+    const bookToUse = hasKeepBook ? keepBookCode : fallback?.code ?? "gen";
+    cgBookSelect.innerHTML = "";
+
+    for (const book of filteredBooks) {
+      const option = document.createElement("option");
+      option.value = book.code;
+      option.textContent = book.name;
+      if (book.code === bookToUse) {
+        option.selected = true;
+      }
+      cgBookSelect.appendChild(option);
+    }
+
+    return bookToUse;
+  }
 
   function buildCgChapterOptions(bookCode, keepChapter) {
     if (!cgChapterSelect) {
@@ -254,21 +320,35 @@ const subtitleText = chapterData
     }
   }
 
-  function selectedCgChapterPath(includeVerse = false) {
+  function selectedCgChapterPath(includeVerse = false, testamentOverride) {
     if (!cgBookSelect || !cgChapterSelect) {
       return "";
     }
     const bookCode = cgBookSelect.value || "gen";
     const chapter = cgChapterSelect.value || "1";
     const basePath = `/games/cryptogram/${cgDifficulty}/${bookCode}/${chapter}`;
-    if (!includeVerse) {
-      return basePath;
+    const params = new URLSearchParams();
+    const testament = normalizeTestamentFilter(
+      testamentOverride || (cgTestamentSelect && "value" in cgTestamentSelect ? cgTestamentSelect.value : currentTestamentFilter())
+    );
+    if (testament === "ot" || testament === "nt") {
+      params.set("testament", testament);
     }
-    return `${basePath}?verse=${encodeURIComponent(`${bookCode}.1.1`)}`;
+    if (includeVerse) {
+      params.set("verse", `${bookCode}.1.1`);
+    }
+    const query = params.toString();
+    return `${basePath}${query ? `?${query}` : ""}`;
   }
 
   function withVerseQuery(href, verseKey) {
     const url = new URL(href, window.location.origin);
+    const testament = cgTestamentSelect && "value" in cgTestamentSelect ? cgTestamentSelect.value : "all";
+    if (testament === "ot" || testament === "nt") {
+      url.searchParams.set("testament", testament);
+    } else {
+      url.searchParams.delete("testament");
+    }
     if (verseKey) {
       url.searchParams.set("verse", verseKey);
     } else {
@@ -534,6 +614,20 @@ const subtitleText = chapterData
     });
   }
 
+  if (cgTestamentSelect) {
+    cgTestamentSelect.addEventListener("change", (event) => {
+      const testament = normalizeTestamentFilter(
+        event.currentTarget && "value" in event.currentTarget ? event.currentTarget.value : "all"
+      );
+      const bookToUse = buildCgBookOptions(cgBookSelect && "value" in cgBookSelect ? cgBookSelect.value : "", testament);
+      buildCgChapterOptions(bookToUse, 1);
+      const nextPath = selectedCgChapterPath(true, testament);
+      if (nextPath) {
+        window.location.href = nextPath;
+      }
+    });
+  }
+
   if (cgChapterSelect) {
     cgChapterSelect.addEventListener("change", () => {
       const nextPath = selectedCgChapterPath();
@@ -543,7 +637,11 @@ const subtitleText = chapterData
     });
   }
 
-  buildCgChapterOptions(String(selectedBookCode || "gen"), Number(selectedChapter || 1));
+  if (cgTestamentSelect) {
+    cgTestamentSelect.value = currentTestamentFilter();
+  }
+  const initialBookCode = buildCgBookOptions(String(selectedBookCode || "gen"), currentTestamentFilter());
+  buildCgChapterOptions(initialBookCode || String(selectedBookCode || "gen"), Number(selectedChapter || 1));
   loadAnswerToggleState();
   syncKeepVerseLinks();
   renderCryptogram(findVerseByKey(defaultKey));

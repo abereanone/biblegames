@@ -19,6 +19,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   margin: 0;
@@ -271,6 +275,18 @@ body.brand-bible-wordle {
   align-items: end;
 }
 
+.cryptogram-picker-row {
+  grid-template-columns: minmax(78px, 0.35fr) minmax(145px, 0.8fr) minmax(82px, 0.35fr) minmax(190px, 1fr);
+}
+
+.word-search-picker-row {
+  grid-template-columns: minmax(78px, 0.35fr) minmax(150px, 0.85fr) minmax(82px, 0.35fr) minmax(120px, 0.45fr);
+}
+
+.verse-unscramble-picker-row {
+  grid-template-columns: minmax(78px, 0.35fr) minmax(145px, 0.75fr) minmax(82px, 0.35fr) minmax(190px, 1fr);
+}
+
 .chapter-jump-spacer {
   min-height: 2.75rem;
 }
@@ -292,6 +308,30 @@ body.brand-bible-wordle {
 
 .cryptogram-print-control > button {
   width: 100%;
+}
+
+.vu-tools-row {
+  margin-top: 0.75rem;
+  grid-template-columns: minmax(120px, 0.2fr) minmax(320px, 0.8fr);
+  align-items: start;
+}
+
+.vu-clue-control {
+  max-width: 180px;
+}
+
+.vu-print-control {
+  width: 100%;
+  justify-self: stretch;
+}
+
+.vu-print-control > button {
+  width: 100%;
+}
+
+.vu-word-bank-toggle {
+  margin-top: 0.85rem;
+  margin-bottom: 0.35rem;
 }
 
 #ws-go-link,
@@ -763,7 +803,7 @@ button:disabled {
 }
 
 .bible-wordle-guess-grid {
-  grid-template-columns: minmax(180px, 1.35fr) minmax(110px, 0.65fr) minmax(110px, 0.65fr) minmax(96px, 0.55fr);
+  grid-template-columns: minmax(78px, 0.45fr) minmax(160px, 1.25fr) minmax(90px, 0.6fr) minmax(90px, 0.6fr) minmax(96px, 0.55fr);
 }
 
 .bible-wordle-guess-grid[hidden] {
@@ -945,6 +985,27 @@ button:disabled {
 
   .cryptogram-tools-row {
     grid-template-columns: 1fr;
+  }
+
+  .cryptogram-picker-row {
+    grid-template-columns: 1fr;
+  }
+
+  .word-search-picker-row {
+    grid-template-columns: 1fr;
+  }
+
+  .verse-unscramble-picker-row {
+    grid-template-columns: 1fr;
+  }
+
+  .vu-tools-row {
+    grid-template-columns: 1fr;
+  }
+
+  .vu-print-control {
+    max-width: none;
+    justify-self: stretch;
   }
 
   .cryptogram-print-control {

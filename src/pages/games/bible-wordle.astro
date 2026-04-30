@@ -63,6 +63,14 @@ const firstBook = wordleData.books[0];
 
         <div id="bw-guess-grid" class="field-grid chapter-jump-grid bible-wordle-guess-grid no-print">
           <div>
+            <label for="bw-testament-select">Books</label>
+            <select id="bw-testament-select" name="bw-testament" aria-label="Filter books by testament">
+              <option value="all" selected>ALL</option>
+              <option value="ot">OT</option>
+              <option value="nt">NT</option>
+            </select>
+          </div>
+          <div>
             <label for="bw-book-select">Book</label>
             <select id="bw-book-select" name="bw-book">
               {wordleData.books.map((book) => (
@@ -140,6 +148,7 @@ const firstBook = wordleData.books[0];
   const puzzleInput = document.getElementById("bw-puzzle-input");
   const openPuzzleButton = document.getElementById("bw-open-puzzle");
   const verseText = document.getElementById("bw-verse-text");
+  const testamentSelect = document.getElementById("bw-testament-select");
   const bookSelect = document.getElementById("bw-book-select");
   const chapterSelect = document.getElementById("bw-chapter-select");
   const verseSelect = document.getElementById("bw-verse-select");
@@ -207,6 +216,54 @@ const firstBook = wordleData.books[0];
 
   function getBook(bookCode) {
     return bwBooks.find((book) => book.code === bookCode) ?? bwBooks[0] ?? null;
+  }
+
+  function normalizeTestamentFilter(value) {
+    return value === "ot" || value === "nt" ? value : "all";
+  }
+
+  function currentTestamentFilter() {
+    return normalizeTestamentFilter(new URLSearchParams(window.location.search).get("testament"));
+  }
+
+  function filteredBooks(testamentOverride) {
+    const testament = normalizeTestamentFilter(
+      testamentOverride || (testamentSelect && "value" in testamentSelect ? testamentSelect.value : currentTestamentFilter())
+    );
+    if (testament === "ot" || testament === "nt") {
+      return bwBooks.filter((book) => book.testament === testament);
+    }
+    return bwBooks;
+  }
+
+  function buildBookOptions(keepBookCode, testamentOverride) {
+    if (!bookSelect) {
+      return "";
+    }
+    const booksToShow = filteredBooks(testamentOverride);
+    const fallback = booksToShow[0] ?? bwBooks[0];
+    const hasKeepBook = booksToShow.some((book) => book.code === keepBookCode);
+    const bookToUse = hasKeepBook ? keepBookCode : fallback?.code ?? "gen";
+    bookSelect.innerHTML = "";
+    for (const book of booksToShow) {
+      const option = document.createElement("option");
+      option.value = book.code;
+      option.textContent = book.name;
+      option.selected = book.code === bookToUse;
+      bookSelect.appendChild(option);
+    }
+    return bookToUse;
+  }
+
+  function syncTestamentUrl(testament) {
+    const normalized = normalizeTestamentFilter(testament);
+    const url = new URL(window.location.href);
+    if (normalized === "ot" || normalized === "nt") {
+      url.searchParams.set("testament", normalized);
+    } else {
+      url.searchParams.delete("testament");
+    }
+    history.replaceState(null, "", `${url.pathname}${url.search}`);
   }
 
   function getChapterEntry(book, chapterNumber) {
@@ -459,9 +516,12 @@ const firstBook = wordleData.books[0];
       verseText.textContent = targetVerse?.text ?? "";
     }
 
+    if (testamentSelect) {
+      testamentSelect.value = currentTestamentFilter();
+    }
     if (bookSelect && bwBooks[0]) {
-      bookSelect.value = bwBooks[0].code;
-      buildChapterOptions(bwBooks[0].code, 1, 1);
+      const firstBookCode = buildBookOptions("", currentTestamentFilter());
+      buildChapterOptions(firstBookCode || bwBooks[0].code, 1, 1);
     }
 
     setStatus(`Guess 1 of ${MAX_GUESSES}.`, "");
@@ -608,6 +668,17 @@ const firstBook = wordleData.books[0];
     });
   }
 
+  if (testamentSelect) {
+    testamentSelect.addEventListener("change", (event) => {
+      const testament = normalizeTestamentFilter(
+        event.currentTarget && "value" in event.currentTarget ? event.currentTarget.value : "all"
+      );
+      const bookToUse = buildBookOptions(bookSelect && "value" in bookSelect ? bookSelect.value : "", testament);
+      buildChapterOptions(bookToUse, 1, 1);
+      syncTestamentUrl(testament);
+    });
+  }
+
   if (chapterSelect) {
     chapterSelect.addEventListener("change", () => {
       const book = getBook(bookSelect && "value" in bookSelect ? bookSelect.value : "");
@@ -673,5 +744,8 @@ const firstBook = wordleData.books[0];
   });
 
   syncHardModeText();
+  if (testamentSelect) {
+    testamentSelect.value = currentTestamentFilter();
+  }
   startPuzzle(puzzleNumberFromUrl(), false);
 </script>
