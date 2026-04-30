@@ -2,7 +2,6 @@ export type Testament = "ot" | "nt";
 
 export type BibleBookMeta = {
   code: string;
-  bsbCode: string;
   name: string;
   testament: Testament;
   order: number;
@@ -146,29 +145,11 @@ const codes = [
   "rev",
 ];
 
-const bsbCodeOverrides: Record<string, string> = {
-  nah: "NAM",
-  mrk: "MAR",
-};
-
 export const BIBLE_BOOKS: BibleBookMeta[] = codes.map((code, index) => ({
   code,
-  bsbCode: bsbCodeOverrides[code] ?? code.toUpperCase(),
   name: names[index] ?? code.toUpperCase(),
   testament: index <= 38 ? "ot" : "nt",
   order: index,
 }));
-console.table(
-  BIBLE_BOOKS.map((b) => ({
-    name: b.name,
-    code: b.code,
-    bsbCode: b.bsbCode,
-    testament: b.testament,
-    order: b.order,
-  }))
-);
-export const BOOKS_BY_CODE = new Map(BIBLE_BOOKS.map((book) => [book.code, book]));
 
-console.log("Book count:", BIBLE_BOOKS.length);
-console.log("Missing name rows:", BIBLE_BOOKS.filter(b => !b.name));
-console.table(BIBLE_BOOKS);
+export const BOOKS_BY_CODE = new Map(BIBLE_BOOKS.map((book) => [book.code, book]));
