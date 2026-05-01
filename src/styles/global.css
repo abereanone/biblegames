@@ -270,6 +270,10 @@ body.brand-bible-wordle {
   gap: 1rem;
 }
 
+.home-picker-row {
+  grid-template-columns: minmax(98px, 0.45fr) minmax(180px, 1fr) minmax(82px, 0.35fr) minmax(130px, 0.55fr);
+}
+
 .chapter-jump-grid {
   margin-top: 0.85rem;
   align-items: end;
@@ -992,6 +996,10 @@ button:disabled {
   }
 
   .word-search-picker-row {
+    grid-template-columns: 1fr;
+  }
+
+  .home-picker-row {
     grid-template-columns: 1fr;
   }
 
