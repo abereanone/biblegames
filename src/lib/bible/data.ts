@@ -1,7 +1,6 @@
 import { access, readFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { BIBLE_BOOKS, BOOKS_BY_CODE, type Testament } from "./books";
+import { BOOKS_BY_CODE, type Testament } from "./books";
 
 type RawVerse = {
   chapter?: number;
@@ -43,17 +42,7 @@ export type BibleData = {
   chapterMap: Map<string, BibleChapter>;
 };
 
-const moduleDir = path.dirname(fileURLToPath(import.meta.url));
-const projectRoot = path.resolve(moduleDir, "../../..");
-const confessionSourceConfigPath = path.resolve(
-  projectRoot,
-  "..",
-  "confession",
-  "shared",
-  "data",
-  "bible-source.json"
-);
-
+const projectRoot = process.cwd();
 let bibleCache: Promise<BibleData> | null = null;
 
 function chapterKey(bookCode: string, chapter: number): string {
@@ -71,45 +60,16 @@ async function fileExists(targetPath: string): Promise<boolean> {
 
 function normalizeBookCode(code: string): string | null {
   const normalized = String(code ?? "").trim().toLowerCase();
-  return BOOKS_BY_CODE.has(normalized) ? normalized : null;
-}
-
-async function resolveBiblePath(): Promise<string | null> {
-  const localCopyPath = path.resolve(projectRoot, "data", "bsb.json");
-
-  const candidates: string[] = [localCopyPath];
-
-  if (await fileExists(confessionSourceConfigPath)) {
-    try {
-      const sourceConfigRaw = await readFile(confessionSourceConfigPath, "utf-8");
-      const sourceConfig = JSON.parse(sourceConfigRaw) as { datasetPath?: string };
-      const datasetPath = typeof sourceConfig.datasetPath === "string" ? sourceConfig.datasetPath.trim() : "";
-      if (datasetPath) {
-        candidates.unshift(path.resolve(path.dirname(confessionSourceConfigPath), datasetPath));
-      }
-    } catch {
-      // Use fallbacks below if confession source config cannot be read.
-    }
-  }
-
-  candidates.push(path.resolve(projectRoot, "..", "catechize.ing", "bsb-data-pipeline", "bsb.json"));
-
-  for (const candidate of candidates) {
-    if (await fileExists(candidate)) {
-      return candidate;
-    }
-  }
-
-  return null;
+  return BOOKS_BY_CODE.get(normalized)?.code ?? null;
 }
 
 async function loadBibleData(): Promise<BibleData> {
-  const sourcePath = await resolveBiblePath();
+  const sourcePath = path.resolve(projectRoot, "data", "bsb.json");
 
-  if (!sourcePath) {
+  if (!(await fileExists(sourcePath))) {
     return {
       hasData: false,
-      sourcePath: path.resolve(projectRoot, "data", "bsb.json"),
+      sourcePath,
       books: [],
       chapterMap: new Map<string, BibleChapter>(),
     };

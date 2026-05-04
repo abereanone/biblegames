@@ -3,6 +3,7 @@ import type { BibleData } from "@/lib/bible/data";
 export type BibleWordleBook = {
   code: string;
   name: string;
+  testament: "ot" | "nt";
   order: number;
   chapters: Array<{
     chapter: number;
@@ -60,6 +61,7 @@ export function buildBibleWordleData(bible: BibleData): BibleWordleData {
     return {
       code: book.code,
       name: book.name,
+      testament: book.testament,
       order: bookOrder,
       chapters,
     };

@@ -2,6 +2,7 @@
 import "@/styles/global.css";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
+import GameNav from "@/components/GameNav.astro";
 
 type Props = {
   title?: string;
@@ -9,6 +10,10 @@ type Props = {
 
 const { title = "Bible Games" } = Astro.props;
 const pathname = Astro.url.pathname;
+const canonicalUrl = new URL(pathname, Astro.site ?? Astro.url.origin);
+const socialImageUrl = new URL("/biblegameslogo.png", canonicalUrl);
+const description = "Printable Bible games and a daily Bible Verse Wordle.";
+
 const brandThemeClass = pathname.includes("/games/coloring-pages")
   ? "brand-coloring-pages"
   : pathname.includes("/games/cryptogram/")
@@ -25,11 +30,45 @@ const brandThemeClass = pathname.includes("/games/coloring-pages")
 <!doctype html>
 <html lang="en">
   <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J2864DDCHT"></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag("js", new Date());
+
+      gtag("config", "G-J2864DDCHT");
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f7f2e7" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Bible Games" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl.href} />
+    <meta property="og:site_name" content="BibleGames.Church" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl.href} />
+    <meta property="og:image" content={socialImageUrl.href} />
+    <meta property="og:image:secure_url" content={socialImageUrl.href} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1024" />
+    <meta property="og:image:height" content="1024" />
+    <meta property="og:image:alt" content="BibleGames.Church logo" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImageUrl.href} />
+    <meta name="twitter:image:alt" content="BibleGames.Church logo" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="shortcut icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <title>{title}</title>
   </head>
   <body class={brandThemeClass}>
@@ -38,5 +77,71 @@ const brandThemeClass = pathname.includes("/games/coloring-pages")
       <slot />
     </main>
     <Footer />
+    <script is:inline>
+      (() => {
+        const PX_PER_IN = 96;
+        let lastScrollY = 0;
+
+        function getPrintConfig(target) {
+          const mode = target?.getAttribute("data-print-mode") || "portrait";
+          if (mode === "landscape") {
+            return { widthIn: 11, heightIn: 8.5, marginIn: 0.4 };
+          }
+          return { widthIn: 8.5, heightIn: 11, marginIn: 0.35 };
+        }
+
+        function applyPrintFit() {
+          const target = document.querySelector(".print-fit-target");
+          if (!target) {
+            return;
+          }
+
+          const { widthIn, heightIn, marginIn } = getPrintConfig(target);
+          const maxWidth = (widthIn - marginIn * 2) * PX_PER_IN;
+          const maxHeight = (heightIn - marginIn * 2) * PX_PER_IN;
+          const rect = target.getBoundingClientRect();
+          const widthScale = rect.width > 0 ? maxWidth / rect.width : 1;
+          const heightScale = rect.height > 0 ? maxHeight / rect.height : 1;
+          const scale = Math.min(1, widthScale, heightScale);
+
+          document.documentElement.style.setProperty("--print-scale", String(scale));
+          document.documentElement.classList.toggle("print-fit-active", scale < 0.999);
+        }
+
+        function clearPrintFit() {
+          document.documentElement.style.removeProperty("--print-scale");
+          document.documentElement.classList.remove("print-fit-active");
+          if (lastScrollY > 0) {
+            setTimeout(() => {
+              window.scrollTo({ top: lastScrollY, left: 0, behavior: "auto" });
+            }, 0);
+          }
+        }
+
+        window.__bgPrint = (event) => {
+          if (event) {
+            event.preventDefault?.();
+            event.stopPropagation?.();
+          }
+          const active = document.activeElement;
+          if (active && "blur" in active && typeof active.blur === "function") {
+            active.blur();
+          }
+          try {
+            history.pushState({ printGuard: true, t: Date.now() }, "", window.location.href);
+          } catch {
+            // Ignore history errors and continue to print.
+          }
+          lastScrollY = window.scrollY || window.pageYOffset || 0;
+          applyPrintFit();
+          setTimeout(() => {
+            window.print();
+          }, 0);
+        };
+
+        window.addEventListener("beforeprint", applyPrintFit);
+        window.addEventListener("afterprint", clearPrintFit);
+      })();
+    </script>
   </body>
 </html>

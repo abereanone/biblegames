@@ -2,7 +2,6 @@ export type Testament = "ot" | "nt";
 
 export type BibleBookMeta = {
   code: string;
-  bsbCode: string;
   name: string;
   testament: Testament;
   order: number;
@@ -148,7 +147,6 @@ const codes = [
 
 export const BIBLE_BOOKS: BibleBookMeta[] = codes.map((code, index) => ({
   code,
-  bsbCode: code.toUpperCase(),
   name: names[index] ?? code.toUpperCase(),
   testament: index <= 38 ? "ot" : "nt",
   order: index,

@@ -1,7 +1,7 @@
 ---
 import Main from "@/layouts/Main.astro";
 import { getBibleData, getChapter } from "@/lib/bible/data";
-import { DIFFICULTIES, parseDifficulty } from "@/lib/games/difficulty";
+import { DIFFICULTIES, DIFFICULTY_LABELS, parseDifficulty } from "@/lib/games/difficulty";
 import { buildVerseUnscramble, pickUnscrambleVerse } from "@/lib/games/verseUnscramble";
 import GameNav from "@/components/GameNav.astro";
 
@@ -51,10 +51,12 @@ const puzzle = selectedVerse ? buildVerseUnscramble(selectedVerse, difficulty) :
 const title = chapterData
   ? `Verse Unscramble (${difficulty}) | ${chapterData.bookName} ${chapterData.chapter}`
   : "Verse Unscramble | Chapter Not Found";
+const defaultClueCount = difficulty === "easy" ? 1 : 0;
+const defaultHideWordBank = difficulty !== "easy";
 
 const difficultyLinks = DIFFICULTIES.map((value) => ({
   value,
-  label: value.charAt(0).toUpperCase() + value.slice(1),
+  label: DIFFICULTY_LABELS[value],
   href: chapterData
     ? `/games/verse-unscramble/${value}/${chapterData.bookCode}/${chapterData.chapter}${
         selectedVerseKey ? `?verse=${encodeURIComponent(selectedVerseKey)}` : ""
@@ -71,7 +73,6 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
     {chapterData && selectedVerse && puzzle ? (
       <>
         <h1 class="title">Verse Unscramble</h1>
-        <p class="muted">{puzzle.clueText}</p>
 
         <div class="button-row no-print">
           {difficultyLinks.map((entry) => (
@@ -81,7 +82,14 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
           ))}
         </div>
 
-        <div class="field-grid chapter-jump-grid no-print">
+        <div class="field-grid chapter-jump-grid verse-unscramble-picker-row no-print">
+          <div>
+            <select id="vu-testament-select" name="vu-testament" aria-label="Filter books by testament">
+              <option value="all" selected>ALL</option>
+              <option value="ot">OT</option>
+              <option value="nt">NT</option>
+            </select>
+          </div>
           <div>
             <select id="vu-book-select" name="vu-book">
               {books.map((book) => (
@@ -105,8 +113,19 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
             </select>
           </div>
         </div>
-        <div class="button-row no-print">
-          <button type="button" onclick="window.__bgPrint ? window.__bgPrint(event) : window.print()">Print this Puzzle!</button>
+        <div class="field-grid vu-tools-row no-print">
+          <div class="vu-clue-control">
+            <select id="vu-clue-count-select">
+              {Array.from({ length: 6 }, (_, index) => (
+                <option value={index} selected={index === defaultClueCount}>
+                  {`${index} ${index === 1 ? "Clue" : "Clues"}`}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div class="vu-print-control">
+            <button type="button" onclick="window.__bgPrint ? window.__bgPrint(event) : window.print()">Print this Puzzle!</button>
+          </div>
         </div>
 
         <p class="no-print print-orientation-tip">Print tip: set orientation to Portrait for Verse Unscramble pages.</p>
@@ -119,7 +138,7 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
                 <div class="answer-cell">
                   <span class={`answer-line ${entry.length >= 12 ? "ultra" : entry.length >= 10 ? "tight" : entry.length >= 8 ? "compact" : ""}`}>
                     {Array.from({ length: entry.length }, (_, slotIndex) => (
-                      puzzle.showFirstLetterHints && slotIndex === entry.hintIndex ? (
+                      defaultClueCount > 0 && slotIndex === entry.hintIndex ? (
                         <span class="hint-slot">{entry.hintLetter}</span>
                       ) : (
                         <span class="answer-slot" aria-hidden="true"></span>
@@ -132,12 +151,14 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
           </ul>
         </div>
 
-        {puzzle.showWordBank ? (
-          <>
+        <label class="answer-toggle vu-word-bank-toggle no-print" for="vu-hide-word-bank">
+          <input id="vu-hide-word-bank" type="checkbox" checked={defaultHideWordBank} />
+          Hide Wordbank
+        </label>
+        <div id="vu-word-bank-block" hidden={defaultHideWordBank}>
             <h2>Word Bank</h2>
             <p id="vu-word-bank" class="word-bank">{puzzle.bankWords.join(" | ")}</p>
-          </>
-        ) : null}
+        </div>
 
         <h2>Solved Verse</h2>
         <div class="solve-lines" aria-label="Space to write solved verse">
@@ -165,21 +186,62 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
 
 <script
   is:inline
-  define:vars={{ books, difficulty, selectedBookCode, selectedChapter, verseOptions, selectedVerseKey }}
+  define:vars={{ books, difficulty, selectedBookCode, selectedChapter, verseOptions, selectedVerseKey, defaultClueCount }}
 >
   const vuBooks = Array.isArray(books) ? books : [];
   const vuDifficulty = String(difficulty || "medium");
   const ANSWER_TOGGLE_STORAGE_KEY = "bg:show-verse";
   const vuVerses = Array.isArray(verseOptions) ? verseOptions : [];
   const vuInitialVerseKey = String(selectedVerseKey || "");
+  const vuTestamentSelect = document.getElementById("vu-testament-select");
   const vuBookSelect = document.getElementById("vu-book-select");
   const vuChapterSelect = document.getElementById("vu-chapter-select");
   const vuVerseSelect = document.getElementById("vu-verse-select");
+  const vuClueCountSelect = document.getElementById("vu-clue-count-select");
+  const vuHideWordBankToggle = document.getElementById("vu-hide-word-bank");
   const vuGrid = document.getElementById("vu-unscramble-grid");
+  const vuWordBankBlock = document.getElementById("vu-word-bank-block");
   const vuWordBank = document.getElementById("vu-word-bank");
   const vuAnswerToggle = document.getElementById("vu-answer-toggle");
   const vuAnswerUpside = document.querySelector(".answer-upside");
   const keepVerseLinks = Array.from(document.querySelectorAll("[data-keep-verse-link]"));
+
+  function normalizeVuTestamentFilter(value) {
+    return value === "ot" || value === "nt" ? value : "all";
+  }
+
+  function currentVuTestamentFilter() {
+    return normalizeVuTestamentFilter(new URLSearchParams(window.location.search).get("testament"));
+  }
+
+  function filteredVuBooks(testamentOverride) {
+    const testament = normalizeVuTestamentFilter(
+      testamentOverride || (vuTestamentSelect && "value" in vuTestamentSelect ? vuTestamentSelect.value : currentVuTestamentFilter())
+    );
+    if (testament === "ot" || testament === "nt") {
+      return vuBooks.filter((book) => book.testament === testament);
+    }
+    return vuBooks;
+  }
+
+  function buildVuBookOptions(keepBookCode, testamentOverride) {
+    if (!vuBookSelect) {
+      return "";
+    }
+    const filteredBooks = filteredVuBooks(testamentOverride);
+    const fallback = filteredBooks[0] ?? vuBooks[0];
+    const hasKeepBook = filteredBooks.some((book) => book.code === keepBookCode);
+    const bookToUse = hasKeepBook ? keepBookCode : fallback?.code ?? "gen";
+    vuBookSelect.innerHTML = "";
+    for (const book of filteredBooks) {
+      const option = document.createElement("option");
+      option.value = book.code;
+      option.textContent = book.name;
+      option.selected = book.code === bookToUse;
+      vuBookSelect.appendChild(option);
+    }
+    return bookToUse;
+  }
 
   function buildVuChapterOptions(bookCode, keepChapter) {
     if (!vuChapterSelect) {
@@ -200,26 +262,50 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
     }
   }
 
-  function selectedVuChapterPath() {
+  function selectedVuChapterPath(testamentOverride) {
     if (!vuBookSelect || !vuChapterSelect) {
       return "";
     }
     const bookCode = vuBookSelect.value || "gen";
     const chapter = vuChapterSelect.value || "1";
-    return `/games/verse-unscramble/${vuDifficulty}/${bookCode}/${chapter}`;
+    const params = new URLSearchParams();
+    const testament = normalizeVuTestamentFilter(
+      testamentOverride || (vuTestamentSelect && "value" in vuTestamentSelect ? vuTestamentSelect.value : currentVuTestamentFilter())
+    );
+    if (testament === "ot" || testament === "nt") {
+      params.set("testament", testament);
+    }
+    const query = params.toString();
+    return `/games/verse-unscramble/${vuDifficulty}/${bookCode}/${chapter}${query ? `?${query}` : ""}`;
   }
 
-  function selectedVuPathWithVerseOne() {
+  function selectedVuPathWithVerseOne(testamentOverride) {
     if (!vuBookSelect) {
       return "";
     }
     const bookCode = vuBookSelect.value || "gen";
     const basePath = `/games/verse-unscramble/${vuDifficulty}/${bookCode}/1`;
-    return `${basePath}?verse=${encodeURIComponent(`${bookCode}.1.1`)}`;
+    const params = new URLSearchParams();
+    params.set("verse", `${bookCode}.1.1`);
+    const testament = normalizeVuTestamentFilter(
+      testamentOverride || (vuTestamentSelect && "value" in vuTestamentSelect ? vuTestamentSelect.value : currentVuTestamentFilter())
+    );
+    if (testament === "ot" || testament === "nt") {
+      params.set("testament", testament);
+    }
+    return `${basePath}?${params.toString()}`;
   }
 
   function withVerseQuery(href, verseKey) {
     const url = new URL(href, window.location.origin);
+    const testament = normalizeVuTestamentFilter(
+      vuTestamentSelect && "value" in vuTestamentSelect ? vuTestamentSelect.value : currentVuTestamentFilter()
+    );
+    if (testament === "ot" || testament === "nt") {
+      url.searchParams.set("testament", testament);
+    } else {
+      url.searchParams.delete("testament");
+    }
     if (verseKey) {
       url.searchParams.set("verse", verseKey);
     } else {
@@ -286,17 +372,31 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
 
   function configForDifficulty() {
     if (vuDifficulty === "easy") {
-      return { maxWords: 10, showWordBank: true, showFirstLetterHints: true };
+      return { showFirstLetterHints: true };
     }
     if (vuDifficulty === "hard") {
-      return { maxWords: 16, showWordBank: false, showFirstLetterHints: false };
+      return { showFirstLetterHints: false };
     }
-    return { maxWords: 12, showWordBank: true, showFirstLetterHints: false };
+    return { showFirstLetterHints: false };
+  }
+
+  function selectedClueCount() {
+    const raw = vuClueCountSelect && "value" in vuClueCountSelect ? Number(vuClueCountSelect.value) : Number(defaultClueCount || 0);
+    return Number.isFinite(raw) ? Math.min(5, Math.max(0, Math.floor(raw))) : Number(defaultClueCount || 0);
+  }
+
+  function pickHintIndexes(answer, randomFn, clueCount) {
+    if (!answer.length || clueCount <= 0) {
+      return [];
+    }
+    const indexes = Array.from({ length: answer.length }, (_, index) => index);
+    return shuffle(indexes, randomFn).slice(0, Math.min(clueCount, answer.length));
   }
 
   function buildPuzzleForVerse(verse) {
     const config = configForDifficulty();
-    const words = normalizeWords(verse.text).slice(0, config.maxWords);
+    const clueCount = selectedClueCount();
+    const words = normalizeWords(verse.text);
     const orderedWords = words.length ? words : ["BIBLE", "VERSE", "TRUTH"];
     const puzzleWords =
       vuDifficulty === "medium" || vuDifficulty === "hard"
@@ -307,6 +407,7 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
 
     const items = puzzleWords.map((answer, index) => {
       const hintIndex = answer.length ? Math.floor(hintRandom() * answer.length) : 0;
+      const hintIndexes = clueCount === 1 ? [hintIndex] : pickHintIndexes(answer, hintRandom, clueCount);
       return {
         index: index + 1,
         answer,
@@ -315,26 +416,34 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
         firstLetter: answer[0] || "",
         hintIndex,
         hintLetter: answer[hintIndex] || "",
+        hintIndexes,
       };
     });
 
-    const bankWords = config.showWordBank
-      ? shuffle(
-          items.map((item) => item.answer),
-          createSeededRandom(`${verse.key}|${vuDifficulty}|bank`)
-        )
-      : [];
+    const bankWords = shuffle(
+      items.map((item) => item.answer),
+      createSeededRandom(`${verse.key}|${vuDifficulty}|bank`)
+    );
 
     return { config, items, bankWords };
   }
 
-  function createAnswerSlots(entry, showHint) {
+  function createAnswerSlots(entry, showHints) {
+    const hintIndexes = new Set(Array.isArray(entry.hintIndexes) ? entry.hintIndexes : []);
     return Array.from({ length: entry.length }, (_, index) => {
-      if (showHint && index === entry.hintIndex) {
-        return `<span class="hint-slot">${entry.hintLetter}</span>`;
+      if (showHints && hintIndexes.has(index)) {
+        return `<span class="hint-slot">${entry.answer[index] || ""}</span>`;
       }
       return '<span class="answer-slot" aria-hidden="true"></span>';
     }).join("");
+  }
+
+  function syncWordBankVisibility() {
+    if (!vuWordBankBlock) {
+      return;
+    }
+    const hide = vuHideWordBankToggle && "checked" in vuHideWordBankToggle ? vuHideWordBankToggle.checked : false;
+    vuWordBankBlock.hidden = hide;
   }
 
   function renderUnscramble(verse) {
@@ -343,7 +452,7 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
     }
 
     const built = buildPuzzleForVerse(verse);
-    const showFirstHints = built.config.showFirstLetterHints;
+    const showFirstHints = selectedClueCount() > 0;
     const itemsHtml = built.items
       .map((entry) => {
         const lineClass =
@@ -363,6 +472,7 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
     if (vuWordBank) {
       vuWordBank.textContent = built.bankWords.join(" | ");
     }
+    syncWordBankVisibility();
 
     if (vuAnswerUpside) {
       vuAnswerUpside.textContent = `Answer: ${verse.reference} ${verse.text}`;
@@ -401,6 +511,20 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
     });
   }
 
+  if (vuTestamentSelect) {
+    vuTestamentSelect.addEventListener("change", (event) => {
+      const testament = normalizeVuTestamentFilter(
+        event.currentTarget && "value" in event.currentTarget ? event.currentTarget.value : "all"
+      );
+      const bookToUse = buildVuBookOptions(vuBookSelect && "value" in vuBookSelect ? vuBookSelect.value : "", testament);
+      buildVuChapterOptions(bookToUse, 1);
+      const nextPath = selectedVuPathWithVerseOne(testament);
+      if (nextPath) {
+        window.location.href = nextPath;
+      }
+    });
+  }
+
   if (vuChapterSelect) {
     vuChapterSelect.addEventListener("change", () => {
       const nextPath = selectedVuChapterPath();
@@ -422,6 +546,20 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
     });
   }
 
+  if (vuClueCountSelect) {
+    vuClueCountSelect.addEventListener("change", () => {
+      const activeKey = vuVerseSelect && "value" in vuVerseSelect ? vuVerseSelect.value : vuInitialVerseKey;
+      const chosenVerse = findVerseByKey(activeKey);
+      if (chosenVerse) {
+        renderUnscramble(chosenVerse);
+      }
+    });
+  }
+
+  if (vuHideWordBankToggle) {
+    vuHideWordBankToggle.addEventListener("change", syncWordBankVisibility);
+  }
+
   if (vuAnswerToggle) {
     vuAnswerToggle.addEventListener("change", () => {
       try {
@@ -433,7 +571,11 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
     });
   }
 
-  buildVuChapterOptions(String(selectedBookCode || "gen"), Number(selectedChapter || 1));
+  if (vuTestamentSelect) {
+    vuTestamentSelect.value = currentVuTestamentFilter();
+  }
+  const initialVuBookCode = buildVuBookOptions(String(selectedBookCode || "gen"), currentVuTestamentFilter());
+  buildVuChapterOptions(initialVuBookCode || String(selectedBookCode || "gen"), Number(selectedChapter || 1));
   loadAnswerToggleState();
   const urlVerse = new URLSearchParams(window.location.search).get("verse") || "";
   const startVerse = findVerseByKey(urlVerse || vuInitialVerseKey);
@@ -444,5 +586,6 @@ const difficultyLinks = DIFFICULTIES.map((value) => ({
     renderUnscramble(startVerse);
   }
   syncVerseLinks();
+  syncWordBankVisibility();
   syncAnswerVisibility();
 </script>

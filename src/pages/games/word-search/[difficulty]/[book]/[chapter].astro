@@ -1,7 +1,7 @@
 ---
 import Main from "@/layouts/Main.astro";
 import { getBibleData, getChapter } from "@/lib/bible/data";
-import { DIFFICULTIES, parseDifficulty, type PuzzleDifficulty } from "@/lib/games/difficulty";
+import { DIFFICULTIES, DIFFICULTY_LABELS, parseDifficulty, type PuzzleDifficulty } from "@/lib/games/difficulty";
 import { buildWordSearch } from "@/lib/games/wordSearch";
 import GameNav from "@/components/GameNav.astro";
 
@@ -36,10 +36,10 @@ const title = chapterData
   ? `Word Search (${difficulty}) | ${chapterData.bookName} ${chapterData.chapter}`
   : "Word Search | Chapter Not Found";
 
-const difficultyLabel = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+const difficultyLabel = DIFFICULTY_LABELS[difficulty];
 const difficultyLinks = DIFFICULTIES.map((value) => ({
   value,
-  label: value.charAt(0).toUpperCase() + value.slice(1),
+  label: DIFFICULTY_LABELS[value],
   href: chapterData ? `/games/word-search/${value}/${chapterData.bookCode}/${chapterData.chapter}` : "/",
 }));
 
@@ -80,7 +80,14 @@ function puzzleSourceLine(value: PuzzleDifficulty, bookName: string, chapter: nu
           ))}
         </div>
 
-        <div class="field-grid chapter-jump-grid no-print">
+        <div class="field-grid chapter-jump-grid word-search-picker-row no-print">
+          <div>
+            <select id="ws-testament-select" name="ws-testament" aria-label="Filter books by testament">
+              <option value="all" selected>ALL</option>
+              <option value="ot">OT</option>
+              <option value="nt">NT</option>
+            </select>
+          </div>
           <div>
             <select id="ws-book-select" name="ws-book">
               {books.map((book) => (
@@ -148,10 +155,48 @@ function puzzleSourceLine(value: PuzzleDifficulty, bookName: string, chapter: nu
   const wsBooks = Array.isArray(books) ? books : [];
   const wsDifficulty = String(difficulty || "medium");
   const ANSWER_TOGGLE_STORAGE_KEY = "bg:show-verse";
+  const wsTestamentSelect = document.getElementById("ws-testament-select");
   const wsBookSelect = document.getElementById("ws-book-select");
   const wsChapterSelect = document.getElementById("ws-chapter-select");
   const wsAnswerToggle = document.getElementById("ws-answer-toggle");
   const wsAnswerUpside = document.getElementById("ws-answer-upside");
+
+  function normalizeWsTestamentFilter(value) {
+    return value === "ot" || value === "nt" ? value : "all";
+  }
+
+  function currentWsTestamentFilter() {
+    return normalizeWsTestamentFilter(new URLSearchParams(window.location.search).get("testament"));
+  }
+
+  function filteredWsBooks(testamentOverride) {
+    const testament = normalizeWsTestamentFilter(
+      testamentOverride || (wsTestamentSelect && "value" in wsTestamentSelect ? wsTestamentSelect.value : currentWsTestamentFilter())
+    );
+    if (testament === "ot" || testament === "nt") {
+      return wsBooks.filter((book) => book.testament === testament);
+    }
+    return wsBooks;
+  }
+
+  function buildWsBookOptions(keepBookCode, testamentOverride) {
+    if (!wsBookSelect) {
+      return "";
+    }
+    const filteredBooks = filteredWsBooks(testamentOverride);
+    const fallback = filteredBooks[0] ?? wsBooks[0];
+    const hasKeepBook = filteredBooks.some((book) => book.code === keepBookCode);
+    const bookToUse = hasKeepBook ? keepBookCode : fallback?.code ?? "gen";
+    wsBookSelect.innerHTML = "";
+    for (const book of filteredBooks) {
+      const option = document.createElement("option");
+      option.value = book.code;
+      option.textContent = book.name;
+      option.selected = book.code === bookToUse;
+      wsBookSelect.appendChild(option);
+    }
+    return bookToUse;
+  }
 
   function buildWsChapterOptions(bookCode, keepChapter) {
     if (!wsChapterSelect) {
@@ -172,19 +217,41 @@ function puzzleSourceLine(value: PuzzleDifficulty, bookName: string, chapter: nu
     }
   }
 
-  function selectedWsChapterPath() {
+  function selectedWsChapterPath(testamentOverride) {
     if (!wsBookSelect || !wsChapterSelect) {
       return "";
     }
     const bookCode = wsBookSelect.value || "gen";
     const chapter = wsChapterSelect.value || "1";
-    return `/games/word-search/${wsDifficulty}/${bookCode}/${chapter}`;
+    const params = new URLSearchParams();
+    const testament = normalizeWsTestamentFilter(
+      testamentOverride || (wsTestamentSelect && "value" in wsTestamentSelect ? wsTestamentSelect.value : currentWsTestamentFilter())
+    );
+    if (testament === "ot" || testament === "nt") {
+      params.set("testament", testament);
+    }
+    const query = params.toString();
+    return `/games/word-search/${wsDifficulty}/${bookCode}/${chapter}${query ? `?${query}` : ""}`;
   }
 
   if (wsBookSelect) {
     wsBookSelect.addEventListener("change", () => {
       buildWsChapterOptions(wsBookSelect.value, 1);
       const nextPath = selectedWsChapterPath();
+      if (nextPath) {
+        window.location.href = nextPath;
+      }
+    });
+  }
+
+  if (wsTestamentSelect) {
+    wsTestamentSelect.addEventListener("change", (event) => {
+      const testament = normalizeWsTestamentFilter(
+        event.currentTarget && "value" in event.currentTarget ? event.currentTarget.value : "all"
+      );
+      const bookToUse = buildWsBookOptions(wsBookSelect && "value" in wsBookSelect ? wsBookSelect.value : "", testament);
+      buildWsChapterOptions(bookToUse, 1);
+      const nextPath = selectedWsChapterPath(testament);
       if (nextPath) {
         window.location.href = nextPath;
       }
@@ -233,7 +300,11 @@ function puzzleSourceLine(value: PuzzleDifficulty, bookName: string, chapter: nu
     });
   }
 
-  buildWsChapterOptions(String(selectedBookCode || "gen"), Number(selectedChapter || 1));
+  if (wsTestamentSelect) {
+    wsTestamentSelect.value = currentWsTestamentFilter();
+  }
+  const initialWsBookCode = buildWsBookOptions(String(selectedBookCode || "gen"), currentWsTestamentFilter());
+  buildWsChapterOptions(initialWsBookCode || String(selectedBookCode || "gen"), Number(selectedChapter || 1));
   loadAnswerToggleState();
   syncAnswerVisibility();
 </script>

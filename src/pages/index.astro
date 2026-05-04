@@ -159,6 +159,26 @@ const firstBook = books[0];
     return bookToUse;
   }
 
+  function filteredBooks() {
+    const testament = testamentSelect && "value" in testamentSelect ? testamentSelect.value : "";
+    if (testament === "ot" || testament === "nt") {
+      return safeBooks.filter((book) => book.testament === testament);
+    }
+    return safeBooks;
+  }
+
+  function buildBookOptions(keepBookCode) {
+    if (!bookSelect) {
+      return safeBooks[0]?.code ?? "gen";
+    }
+    const book = bookSelect.value;
+    const chapter = chapterSelect.value || "1";
+    const difficulty = difficultySelect?.value || "medium";
+    wordLink.setAttribute("href", `/games/word-search/${difficulty}/${book}/${chapter}`);
+    cryptLink.setAttribute("href", `/games/cryptogram/${difficulty}/${book}/${chapter}`);
+    verseUnscrambleLink.setAttribute("href", `/games/verse-unscramble/${difficulty}/${book}/${chapter}`);
+  }
+
   function randomChapterPath(game) {
     const difficulty = difficultySelect?.value || "medium";
     const pool = filteredBooks().filter((entry) => Number(entry.chapterCount) > 0);
@@ -186,6 +206,24 @@ const firstBook = books[0];
     bookSelect.addEventListener("change", () => {
       const selected = safeBooks.find((entry) => entry.code === bookSelect.value);
       buildChapterOptions(selected?.chapterCount ?? 1, 1);
+    });
+  }
+
+  if (testamentSelect) {
+    testamentSelect.addEventListener("change", () => {
+      const bookToUse = buildBookOptions(bookSelect && "value" in bookSelect ? bookSelect.value : "");
+      const selected = safeBooks.find((entry) => entry.code === bookToUse);
+      buildChapterOptions(selected?.chapterCount ?? 1, 1);
+      syncQuickStartLinks();
+    });
+  }
+
+  if (testamentSelect) {
+    testamentSelect.addEventListener("change", () => {
+      const bookToUse = buildBookOptions(bookSelect && "value" in bookSelect ? bookSelect.value : "");
+      const selected = safeBooks.find((entry) => entry.code === bookToUse);
+      buildChapterOptions(selected?.chapterCount ?? 1, 1);
+      syncQuickStartLinks();
     });
   }
 

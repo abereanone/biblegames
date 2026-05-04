@@ -1036,21 +1036,10 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 
- .home-picker-row {
-    grid-template-columns: minmax(55px, 0.45fr) minmax(110px, 1.25fr) minmax(55px, 0.45fr) minmax(95px, 0.9fr);
-    gap: 0.35rem;
+  .home-picker-row {
+    grid-template-columns: 1fr;
   }
 
-  .home-picker-row label {
-    font-size: 0.72rem;
-  }
-
-  .home-picker-row select {
-    min-width: 0;
-    padding: 0.4rem 0.3rem;
-    font-size: 0.82rem;
-  }
-  
   .verse-unscramble-picker-row {
     grid-template-columns: 1fr;
   }
