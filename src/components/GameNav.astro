@@ -4,7 +4,6 @@ type Props = {
   bookCode?: string;
   chapter?: number | string;
   verseKey?: string;
-  theme?: string;
 };
 
 const {
@@ -12,14 +11,13 @@ const {
   bookCode = "gen",
   chapter = 1,
   verseKey = "",
-  theme = "default",
 } = Astro.props;
 
 const chapterPath = `${difficulty}/${bookCode}/${chapter}`;
 const verseQuery = verseKey ? `?verse=${encodeURIComponent(verseKey)}` : "";
 ---
 
-<section class={`panel no-print game-nav-panel game-theme theme-${theme}`}>
+<section class="panel no-print game-nav-panel">
   <div class="button-row">
     <a class="btn game-btn" data-game="word-search" href={`/games/word-search/${chapterPath}`}>
       Word Search

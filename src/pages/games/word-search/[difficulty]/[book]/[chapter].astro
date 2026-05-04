@@ -3,6 +3,7 @@ import Main from "@/layouts/Main.astro";
 import { getBibleData, getChapter } from "@/lib/bible/data";
 import { DIFFICULTIES, parseDifficulty, type PuzzleDifficulty } from "@/lib/games/difficulty";
 import { buildWordSearch } from "@/lib/games/wordSearch";
+import GameNav from "@/components/GameNav.astro";
 
 export async function getStaticPaths() {
   const bible = await getBibleData();
@@ -64,36 +65,7 @@ function puzzleSourceLine(value: PuzzleDifficulty, bookName: string, chapter: nu
 ---
 
 <Main title={title}>
-  {chapterData && puzzle ? (
-    <section class="panel no-print game-nav-panel game-theme theme-word-search">
-      <div class="button-row">
-        <a
-          class="btn game-btn"
-          data-game="word-search"
-          href={`/games/word-search/${difficulty}/${chapterData.bookCode}/${chapterData.chapter}`}
-        >
-          Word Search
-        </a>
-        <a
-          class="btn game-btn"
-          data-game="cryptogram"
-          href={`/games/cryptogram/${difficulty}/${chapterData.bookCode}/${chapterData.chapter}`}
-        >
-          Cryptogram
-        </a>
-        <a
-          class="btn game-btn"
-          data-game="verse-unscramble"
-          href={`/games/verse-unscramble/${difficulty}/${chapterData.bookCode}/${chapterData.chapter}`}
-        >
-          Verse Unscramble
-        </a>
-        <a class="btn game-btn" data-game="bible-wordle" href="/games/bible-wordle">
-          Bible Verse Wordle
-        </a>
-      </div>
-    </section>
-  ) : null}
+  <GameNav />
 
   <section class="panel game-theme theme-word-search">
     {chapterData && puzzle ? (
