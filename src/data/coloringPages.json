@@ -12,5 +12,96 @@
     "description": "A printable coloring page about Noah, the ark, and God's promise.",
     "pdfPath": "/coloring-pages/pdf/noahs-ark.pdf",
     "previewPath": "/coloring-pages/previews/noahs-ark.svg"
+  },
+  {
+    "title": "Abraham and Isaac",
+    "bibleReference": "Genesis 22",
+    "description": "A printable coloring page about Abraham trusting God and God's provision.",
+    "pdfPath": "/coloring-pages/pdf/abraham-and-isaac.pdf",
+    "previewPath": "/coloring-pages/previews/abraham-and-isaac.svg"
+  },
+  {
+    "title": "Joseph and His Coat",
+    "bibleReference": "Genesis 37",
+    "description": "A printable coloring page about Joseph and the coat his father gave him.",
+    "pdfPath": "/coloring-pages/pdf/joseph-and-his-coat.pdf",
+    "previewPath": "/coloring-pages/previews/joseph-and-his-coat.svg"
+  },
+  {
+    "title": "Moses and the Burning Bush",
+    "bibleReference": "Exodus 3",
+    "description": "A printable coloring page about God speaking to Moses from the burning bush.",
+    "pdfPath": "/coloring-pages/pdf/moses-burning-bush.pdf",
+    "previewPath": "/coloring-pages/previews/moses-burning-bush.svg"
+  },
+  {
+    "title": "Crossing the Red Sea",
+    "bibleReference": "Exodus 14",
+    "description": "A printable coloring page about God delivering Israel through the Red Sea.",
+    "pdfPath": "/coloring-pages/pdf/crossing-the-red-sea.pdf",
+    "previewPath": "/coloring-pages/previews/crossing-the-red-sea.svg"
+  },
+  {
+    "title": "Joshua and the Battle of Jericho",
+    "bibleReference": "Joshua 6",
+    "description": "A printable coloring page about the walls of Jericho falling after Israel obeyed God.",
+    "pdfPath": "/coloring-pages/pdf/joshua-jericho.pdf",
+    "previewPath": "/coloring-pages/previews/joshua-jericho.svg"
+  },
+  {
+    "title": "David and Goliath",
+    "bibleReference": "1 Samuel 17",
+    "description": "A printable coloring page about David trusting the Lord against Goliath.",
+    "pdfPath": "/coloring-pages/pdf/david-and-goliath.pdf",
+    "previewPath": "/coloring-pages/previews/david-and-goliath.svg"
+  },
+  {
+    "title": "Daniel in the Lions' Den",
+    "bibleReference": "Daniel 6",
+    "description": "A printable coloring page about God protecting Daniel in the lions' den.",
+    "pdfPath": "/coloring-pages/pdf/daniel-lions-den.pdf",
+    "previewPath": "/coloring-pages/previews/daniel-lions-den.svg"
+  },
+  {
+    "title": "Jonah and the Great Fish",
+    "bibleReference": "Jonah 1-2",
+    "description": "A printable coloring page about Jonah, the storm, and the great fish.",
+    "pdfPath": "/coloring-pages/pdf/jonah-great-fish.pdf",
+    "previewPath": "/coloring-pages/previews/jonah-great-fish.svg"
+  },
+  {
+    "title": "The Birth of Jesus",
+    "bibleReference": "Luke 2",
+    "description": "A printable coloring page about the birth of Jesus in Bethlehem.",
+    "pdfPath": "/coloring-pages/pdf/birth-of-jesus.pdf",
+    "previewPath": "/coloring-pages/previews/birth-of-jesus.svg"
+  },
+  {
+    "title": "Jesus Feeds the 5,000",
+    "bibleReference": "John 6",
+    "description": "A printable coloring page about Jesus feeding the crowd with loaves and fish.",
+    "pdfPath": "/coloring-pages/pdf/jesus-feeds-5000.pdf",
+    "previewPath": "/coloring-pages/previews/jesus-feeds-5000.svg"
+  },
+  {
+    "title": "Jesus Calms the Storm",
+    "bibleReference": "Mark 4:35-41",
+    "description": "A printable coloring page about Jesus calming the wind and the waves.",
+    "pdfPath": "/coloring-pages/pdf/jesus-calms-storm.pdf",
+    "previewPath": "/coloring-pages/previews/jesus-calms-storm.svg"
+  },
+  {
+    "title": "The Good Samaritan",
+    "bibleReference": "Luke 10:25-37",
+    "description": "A printable coloring page about showing mercy to your neighbor.",
+    "pdfPath": "/coloring-pages/pdf/good-samaritan.pdf",
+    "previewPath": "/coloring-pages/previews/good-samaritan.svg"
+  },
+  {
+    "title": "The Empty Tomb",
+    "bibleReference": "Matthew 28",
+    "description": "A printable coloring page celebrating Jesus' resurrection.",
+    "pdfPath": "/coloring-pages/pdf/empty-tomb.pdf",
+    "previewPath": "/coloring-pages/previews/empty-tomb.svg"
   }
 ]
