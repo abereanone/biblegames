@@ -1,0 +1,16 @@
+[
+  {
+    "title": "Creation",
+    "bibleReference": "Genesis 1",
+    "description": "A printable coloring page about God creating the heavens and the earth.",
+    "pdfPath": "/coloring-pages/pdf/creation.pdf",
+    "previewPath": "/coloring-pages/previews/creation.svg"
+  },
+  {
+    "title": "Noah's Ark",
+    "bibleReference": "Genesis 6-9",
+    "description": "A printable coloring page about Noah, the ark, and God's promise.",
+    "pdfPath": "/coloring-pages/pdf/noahs-ark.pdf",
+    "previewPath": "/coloring-pages/previews/noahs-ark.svg"
+  }
+]
