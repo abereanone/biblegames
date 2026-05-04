@@ -1,0 +1,40 @@
+---
+type Props = {
+  difficulty?: string;
+  bookCode?: string;
+  chapter?: number | string;
+  verseKey?: string;
+  theme?: string;
+};
+
+const {
+  difficulty = "medium",
+  bookCode = "gen",
+  chapter = 1,
+  verseKey = "",
+  theme = "default",
+} = Astro.props;
+
+const chapterPath = `${difficulty}/${bookCode}/${chapter}`;
+const verseQuery = verseKey ? `?verse=${encodeURIComponent(verseKey)}` : "";
+---
+
+<section class={`panel no-print game-nav-panel game-theme theme-${theme}`}>
+  <div class="button-row">
+    <a class="btn game-btn" data-game="word-search" href={`/games/word-search/${chapterPath}`}>
+      Word Search
+    </a>
+    <a class="btn game-btn" data-game="cryptogram" href={`/games/cryptogram/${chapterPath}${verseQuery}`}>
+      Cryptogram
+    </a>
+    <a class="btn game-btn" data-game="verse-unscramble" href={`/games/verse-unscramble/${chapterPath}${verseQuery}`}>
+      Verse Unscramble
+    </a>
+    <a class="btn game-btn" data-game="coloring-pages" href="/games/coloring-pages">
+      Coloring Pages
+    </a>
+    <a class="btn game-btn" data-game="bible-wordle" href="/games/bible-wordle">
+      Bible Verse Wordle
+    </a>
+  </div>
+</section>
