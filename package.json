@@ -9,9 +9,6 @@
     "preview": "astro preview"
   },
   "dependencies": {
-    "astro": "^5.18.1"
-  },
-  "devDependencies": {
-    "@types/node": "^25.6.0"
+    "astro": "^6.2.1"
   }
 }

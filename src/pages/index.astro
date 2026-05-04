@@ -2,6 +2,7 @@
 import Main from "@/layouts/Main.astro";
 import { getBibleData } from "@/lib/bible/data";
 import { DIFFICULTIES, DIFFICULTY_LABELS } from "@/lib/games/difficulty";
+import GameNav from "@/components/GameNav.astro";
 
 const bible = await getBibleData();
 const books = bible.books;
@@ -65,20 +66,7 @@ const firstBook = books[0];
           </div>
         </div>
 
-        <div class="button-row">
-          <a id="word-search-link" class="btn game-btn" data-game="word-search" href={`/games/word-search/medium/${firstBook?.code ?? "gen"}/1`}>
-            Word Search
-          </a>
-          <a id="cryptogram-link" class="btn game-btn" data-game="cryptogram" href={`/games/cryptogram/medium/${firstBook?.code ?? "gen"}/1`}>
-            Cryptogram
-          </a>
-          <a id="verse-unscramble-link" class="btn game-btn" data-game="verse-unscramble" href={`/games/verse-unscramble/medium/${firstBook?.code ?? "gen"}/1`}>
-            Verse Unscramble
-          </a>
-          <a class="btn game-btn" data-game="bible-wordle" href="/games/bible-wordle">
-            Bible Verse Wordle
-          </a>
-        </div>
+        <GameNav />
 
         <h2>Quick Start</h2>
         <div class="button-row">
@@ -122,9 +110,6 @@ const firstBook = books[0];
   const bookSelect = document.getElementById("book-select");
   const chapterSelect = document.getElementById("chapter-select");
   const difficultySelect = document.getElementById("difficulty-select");
-  const wordLink = document.getElementById("word-search-link");
-  const cryptLink = document.getElementById("cryptogram-link");
-  const verseUnscrambleLink = document.getElementById("verse-unscramble-link");
   const randomWordLink = document.getElementById("random-word-search-link");
   const randomCryptLink = document.getElementById("random-cryptogram-link");
   const randomVerseUnscrambleLink = document.getElementById("random-verse-unscramble-link");
@@ -174,9 +159,17 @@ const firstBook = books[0];
     return bookToUse;
   }
 
-  function syncLinks() {
-    if (!bookSelect || !chapterSelect || !wordLink || !cryptLink || !verseUnscrambleLink) {
-      return;
+  function filteredBooks() {
+    const testament = testamentSelect && "value" in testamentSelect ? testamentSelect.value : "";
+    if (testament === "ot" || testament === "nt") {
+      return safeBooks.filter((book) => book.testament === testament);
+    }
+    return safeBooks;
+  }
+
+  function buildBookOptions(keepBookCode) {
+    if (!bookSelect) {
+      return safeBooks[0]?.code ?? "gen";
     }
     const book = bookSelect.value;
     const chapter = chapterSelect.value || "1";
@@ -213,7 +206,6 @@ const firstBook = books[0];
     bookSelect.addEventListener("change", () => {
       const selected = safeBooks.find((entry) => entry.code === bookSelect.value);
       buildChapterOptions(selected?.chapterCount ?? 1, 1);
-      syncLinks();
     });
   }
 
@@ -222,13 +214,26 @@ const firstBook = books[0];
       const bookToUse = buildBookOptions(bookSelect && "value" in bookSelect ? bookSelect.value : "");
       const selected = safeBooks.find((entry) => entry.code === bookToUse);
       buildChapterOptions(selected?.chapterCount ?? 1, 1);
-      syncLinks();
       syncQuickStartLinks();
     });
   }
 
-  if (chapterSelect) {
-    chapterSelect.addEventListener("change", syncLinks);
+  if (testamentSelect) {
+    testamentSelect.addEventListener("change", () => {
+      const bookToUse = buildBookOptions(bookSelect && "value" in bookSelect ? bookSelect.value : "");
+      const selected = safeBooks.find((entry) => entry.code === bookToUse);
+      buildChapterOptions(selected?.chapterCount ?? 1, 1);
+      syncQuickStartLinks();
+    });
+  }
+
+  if (testamentSelect) {
+    testamentSelect.addEventListener("change", () => {
+      const bookToUse = buildBookOptions(bookSelect && "value" in bookSelect ? bookSelect.value : "");
+      const selected = safeBooks.find((entry) => entry.code === bookToUse);
+      buildChapterOptions(selected?.chapterCount ?? 1, 1);
+      syncQuickStartLinks();
+    });
   }
 
   if (difficultySelect) {
@@ -238,7 +243,6 @@ const firstBook = books[0];
       } catch {
         // Ignore storage errors; links still sync in-memory.
       }
-      syncLinks();
       syncQuickStartLinks();
     });
   }
@@ -273,6 +277,5 @@ const firstBook = books[0];
     }
   }
 
-  syncLinks();
   syncQuickStartLinks();
 </script>

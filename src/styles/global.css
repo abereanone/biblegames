@@ -51,7 +51,7 @@ a:focus-visible {
   align-items: center;
   gap: 1rem;
   padding: 1rem 1.25rem;
-  background: linear-gradient(180deg, var(--brand-header-top) 0%, var(--brand-header-bottom) 100%);
+  background: var(--brand-header-top);
   border-bottom: 1px solid var(--brand-header-border);
   position: sticky;
   top: 0;
@@ -190,6 +190,17 @@ a:focus-visible {
   line-height: 1.45;
 }
 
+body.brand-coloring-pages {
+  --brand-header-top: #7b5bd6;
+  --brand-header-bottom: #4c328f;
+  --brand-header-border: #3f2878;
+  --brand-footer-top: #7b5bd6;
+  --brand-footer-bottom: #4c328f;
+  --brand-footer-link: #efe6ff;
+  --brand-footer-link-hover: #ffffff;
+  --brand-footer-copy: #f4e9ff;
+}
+
 body.brand-cryptogram {
   --brand-header-top: #2f5b9f;
   --brand-header-bottom: #1f3f71;
@@ -271,7 +282,8 @@ body.brand-bible-wordle {
 }
 
 .home-picker-row {
-  grid-template-columns: minmax(98px, 0.45fr) minmax(180px, 1fr) minmax(82px, 0.35fr) minmax(130px, 0.55fr);
+  grid-template-columns: minmax(90px, 0.45fr) minmax(180px, 1.35fr) minmax(90px, 0.55fr) minmax(150px, 1fr);
+  gap: 0.65rem;
 }
 
 .chapter-jump-grid {
@@ -393,6 +405,11 @@ button,
   --game-ink: var(--accent-strong);
 }
 
+.theme-coloring-pages {
+  --game-accent: #7b5bd6;
+  --game-ink: #4c328f;
+}
+
 .theme-word-search {
   --game-accent: #103f36;
   --game-ink: #123a30;
@@ -456,6 +473,26 @@ button,
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 0.75rem;
+}
+
+.game-nav-panel .button-row {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.game-nav-panel .btn {
+  padding: 0.55rem 0.45rem;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .game-nav-panel .button-row {
+    grid-template-columns: 1fr;
+  }
+
+  .game-nav-panel .btn {
+    white-space: normal;
+  }
 }
 
 .btn,
@@ -1165,3 +1202,9 @@ button:disabled {
     page-break-inside: avoid;
   }
 }
+
+.game-btn[data-game="coloring-pages"] {
+  background: #7b5bd6;
+  border-color: #7b5bd6;
+}
+

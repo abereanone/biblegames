@@ -3,6 +3,7 @@ import Main from "@/layouts/Main.astro";
 import { getBibleData } from "@/lib/bible/data";
 import { buildBibleWordleData } from "@/lib/games/bibleWordle";
 import encouragementMessages from "@/lib/games/bibleWordleEncouragement.json";
+import GameNav from "@/components/GameNav.astro";
 
 const bible = await getBibleData();
 const wordleData = buildBibleWordleData(bible);
@@ -11,35 +12,7 @@ const firstBook = wordleData.books[0];
 
 <Main title="Bible Verse Wordle | Daily Bible Reference Game">
   {bible.hasData ? (
-    <>
-      <section class="panel no-print game-nav-panel game-theme theme-bible-wordle">
-        <div class="button-row">
-          <a
-            class="btn game-btn"
-            data-game="word-search"
-            href={`/games/word-search/medium/${firstBook?.code ?? "gen"}/1`}
-          >
-            Word Search
-          </a>
-          <a
-            class="btn game-btn"
-            data-game="cryptogram"
-            href={`/games/cryptogram/medium/${firstBook?.code ?? "gen"}/1`}
-          >
-            Cryptogram
-          </a>
-          <a
-            class="btn game-btn"
-            data-game="verse-unscramble"
-            href={`/games/verse-unscramble/medium/${firstBook?.code ?? "gen"}/1`}
-          >
-            Verse Unscramble
-          </a>
-          <a class="btn game-btn" data-game="bible-wordle" href="/games/bible-wordle">
-            Bible Verse Wordle
-          </a>
-        </div>
-      </section>
+      <GameNav />
 
       <section class="panel game-theme theme-bible-wordle bible-wordle-shell">
         <h1 class="title">Bible Verse Wordle</h1>

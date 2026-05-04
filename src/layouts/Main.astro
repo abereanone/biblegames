@@ -2,6 +2,7 @@
 import "@/styles/global.css";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
+import GameNav from "@/components/GameNav.astro";
 
 type Props = {
   title?: string;
@@ -12,15 +13,18 @@ const pathname = Astro.url.pathname;
 const canonicalUrl = new URL(pathname, Astro.site ?? Astro.url.origin);
 const socialImageUrl = new URL("/biblegameslogo.png", canonicalUrl);
 const description = "Printable Bible games and a daily Bible Verse Wordle.";
-const brandThemeClass = pathname.includes("/games/cryptogram/")
-  ? "brand-cryptogram"
-  : pathname.includes("/games/verse-unscramble/")
-    ? "brand-verse-unscramble"
-    : pathname.includes("/games/bible-wordle")
-      ? "brand-bible-wordle"
-      : pathname.includes("/games/word-search/")
-        ? "brand-word-search"
-        : "brand-default";
+
+const brandThemeClass = pathname.includes("/games/coloring-pages")
+  ? "brand-coloring-pages"
+  : pathname.includes("/games/cryptogram/")
+    ? "brand-cryptogram"
+    : pathname.includes("/games/verse-unscramble/")
+      ? "brand-verse-unscramble"
+      : pathname.includes("/games/bible-wordle")
+        ? "brand-bible-wordle"
+        : pathname.includes("/games/word-search/")
+          ? "brand-word-search"
+          : "brand-default";
 ---
 
 <!doctype html>
@@ -41,6 +45,8 @@ const brandThemeClass = pathname.includes("/games/cryptogram/")
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Bible Games" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalUrl.href} />
     <meta property="og:site_name" content="BibleGames.Church" />
@@ -136,27 +142,6 @@ const brandThemeClass = pathname.includes("/games/cryptogram/")
         window.addEventListener("beforeprint", applyPrintFit);
         window.addEventListener("afterprint", clearPrintFit);
       })();
-
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          const isLocalDev = ["localhost", "127.0.0.1", "[::1]"].includes(window.location.hostname);
-          if (isLocalDev) {
-            navigator.serviceWorker.getRegistrations().then((registrations) => {
-              registrations.forEach((registration) => registration.unregister());
-            });
-            if ("caches" in window) {
-              caches.keys().then((keys) => {
-                keys.filter((key) => key.startsWith("biblegames-")).forEach((key) => caches.delete(key));
-              });
-            }
-            return;
-          }
-
-          navigator.serviceWorker.register("/sw.js").catch(() => {
-            // The site still works without offline caching.
-          });
-        });
-      }
     </script>
   </body>
 </html>

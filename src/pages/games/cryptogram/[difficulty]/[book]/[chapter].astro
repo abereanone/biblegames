@@ -3,6 +3,7 @@ import Main from "@/layouts/Main.astro";
 import { getBibleData, getChapter } from "@/lib/bible/data";
 import { DIFFICULTIES, DIFFICULTY_LABELS, parseDifficulty } from "@/lib/games/difficulty";
 import { pickDefaultVerse } from "@/lib/games/cryptogram";
+import GameNav from "@/components/GameNav.astro";
 
 export async function getStaticPaths() {
   const bible = await getBibleData();
@@ -93,40 +94,7 @@ const subtitleText = chapterData
 ---
 
 <Main title={title}>
-  {chapterData ? (
-    <section class="panel no-print game-nav-panel game-theme theme-cryptogram">
-      <div class="button-row">
-        <a
-          class="btn game-btn"
-          data-game="word-search"
-          href={`/games/word-search/${difficulty}/${chapterData.bookCode}/${chapterData.chapter}`}
-        >
-          Word Search
-        </a>
-        <a
-          class="btn game-btn"
-          data-game="cryptogram"
-          href={`/games/cryptogram/${difficulty}/${chapterData.bookCode}/${chapterData.chapter}${
-            defaultVerseKey ? `?verse=${encodeURIComponent(defaultVerseKey)}` : ""
-          }`}
-        >
-          Cryptogram
-        </a>
-        <a
-          class="btn game-btn"
-          data-game="verse-unscramble"
-          href={`/games/verse-unscramble/${difficulty}/${chapterData.bookCode}/${chapterData.chapter}${
-            defaultVerseKey ? `?verse=${encodeURIComponent(defaultVerseKey)}` : ""
-          }`}
-        >
-          Verse Unscramble
-        </a>
-        <a class="btn game-btn" data-game="bible-wordle" href="/games/bible-wordle">
-          Bible Verse Wordle
-        </a>
-      </div>
-    </section>
-  ) : null}
+  <GameNav />
 
   <section class="panel game-theme theme-cryptogram cryptogram-print-layout print-fit-target">
     {chapterData ? (
