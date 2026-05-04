@@ -1,17 +1,19 @@
 ---
 import Main from "@/layouts/Main.astro";
 import { getBibleData } from "@/lib/bible/data";
+import { DIFFICULTIES, DIFFICULTY_LABELS } from "@/lib/games/difficulty";
+import GameNav from "@/components/GameNav.astro";
 
 const bible = await getBibleData();
 const books = bible.books;
 const firstBook = books[0];
 ---
 
-<Main title="Bible Games | Chapter Picker">
+<Main title="Bible Games | Fun games while learning!">
   <section class="panel">
     <h1 class="title">Printable Bible Games</h1>
     <p class="subtitle">
-      Pick a chapter, then print a Word Search, Cryptogram, Verse Unscramble, coloring page, or play Bible Verse Wordle.
+      Pick a chapter, then tap the button for the game you want to play.
     </p>
 
     {!bible.hasData ? (
@@ -25,12 +27,20 @@ const firstBook = books[0];
       </>
     ) : (
       <>
-        <div class="field-grid">
+        <div class="field-grid home-picker-row">
+          <div>
+            <label for="testament-select">OT / NT</label>
+            <select id="testament-select" name="testament" aria-label="Filter books by testament">
+              <option value="">All</option>
+              <option value="ot">OT</option>
+              <option value="nt">NT</option>
+            </select>
+          </div>
           <div>
             <label for="book-select">Bible Book</label>
             <select id="book-select" name="book">
               {books.map((book) => (
-                <option value={book.code} data-chapters={book.chapterCount}>
+                <option value={book.code} data-chapters={book.chapterCount} data-testament={book.testament}>
                   {book.name}
                 </option>
               ))}
@@ -47,33 +57,18 @@ const firstBook = books[0];
           <div>
             <label for="difficulty-select">Difficulty</label>
             <select id="difficulty-select" name="difficulty">
-              <option value="easy">Easy</option>
-              <option value="medium" selected>Medium</option>
-              <option value="hard">Hard</option>
+              {DIFFICULTIES.map((difficulty) => (
+                <option value={difficulty} selected={difficulty === "medium"}>
+                  {DIFFICULTY_LABELS[difficulty]}
+                </option>
+              ))}
             </select>
           </div>
         </div>
 
-        <div class="button-row">
-          <a id="word-search-link" class="btn game-btn" data-game="word-search" href={`/games/word-search/medium/${firstBook?.code ?? "gen"}/1`}>
-            Word Search
-          </a>
-          <a id="cryptogram-link" class="btn game-btn" data-game="cryptogram" href={`/games/cryptogram/medium/${firstBook?.code ?? "gen"}/1`}>
-            Cryptogram
-          </a>
-          <a id="verse-unscramble-link" class="btn game-btn" data-game="verse-unscramble" href={`/games/verse-unscramble/medium/${firstBook?.code ?? "gen"}/1`}>
-            Verse Unscramble
-          </a>
-          <a class="btn game-btn" data-game="coloring-pages" href="/games/coloring-pages">
-            Coloring Pages
-          </a>
-          <a class="btn game-btn" data-game="bible-wordle" href="/games/bible-wordle">
-            Bible Verse Wordle
-          </a>
-        </div>
+        <GameNav />
 
         <h2>Quick Start</h2>
-        <p class="muted">Jump into a random chapter using the selected difficulty.</p>
         <div class="button-row">
           <a
             id="random-word-search-link"
@@ -99,15 +94,10 @@ const firstBook = books[0];
           >
             Random Verse Unscramble
           </a>
-          <a class="btn game-btn" data-game="coloring-pages" href="/games/coloring-pages">
-            Coloring Pages
-          </a>
           <a class="btn game-btn" data-game="bible-wordle" href="/games/bible-wordle">
             Bible Verse Wordle Today
           </a>
         </div>
-
-        <p class="muted">Tip: Use your browser print dialog to print each game page.</p>
       </>
     )}
   </section>
@@ -116,12 +106,10 @@ const firstBook = books[0];
 <script is:inline define:vars={{ books }}>
   const DIFFICULTY_STORAGE_KEY = "bg:difficulty";
   const safeBooks = Array.isArray(books) ? books : [];
+  const testamentSelect = document.getElementById("testament-select");
   const bookSelect = document.getElementById("book-select");
   const chapterSelect = document.getElementById("chapter-select");
   const difficultySelect = document.getElementById("difficulty-select");
-  const wordLink = document.getElementById("word-search-link");
-  const cryptLink = document.getElementById("cryptogram-link");
-  const verseUnscrambleLink = document.getElementById("verse-unscramble-link");
   const randomWordLink = document.getElementById("random-word-search-link");
   const randomCryptLink = document.getElementById("random-cryptogram-link");
   const randomVerseUnscrambleLink = document.getElementById("random-verse-unscramble-link");
@@ -142,21 +130,38 @@ const firstBook = books[0];
     }
   }
 
-  function syncLinks() {
-    if (!bookSelect || !chapterSelect || !wordLink || !cryptLink || !verseUnscrambleLink) {
-      return;
+  function filteredBooks() {
+    const testament = testamentSelect && "value" in testamentSelect ? testamentSelect.value : "";
+    if (testament === "ot" || testament === "nt") {
+      return safeBooks.filter((book) => book.testament === testament);
     }
-    const book = bookSelect.value;
-    const chapter = chapterSelect.value || "1";
-    const difficulty = difficultySelect?.value || "medium";
-    wordLink.setAttribute("href", `/games/word-search/${difficulty}/${book}/${chapter}`);
-    cryptLink.setAttribute("href", `/games/cryptogram/${difficulty}/${book}/${chapter}`);
-    verseUnscrambleLink.setAttribute("href", `/games/verse-unscramble/${difficulty}/${book}/${chapter}`);
+    return safeBooks;
+  }
+
+  function buildBookOptions(keepBookCode) {
+    if (!bookSelect) {
+      return safeBooks[0]?.code ?? "gen";
+    }
+    const booksToShow = filteredBooks();
+    const fallback = booksToShow[0] ?? safeBooks[0];
+    const hasKeepBook = booksToShow.some((book) => book.code === keepBookCode);
+    const bookToUse = hasKeepBook ? keepBookCode : fallback?.code ?? "gen";
+    bookSelect.innerHTML = "";
+    for (const book of booksToShow) {
+      const option = document.createElement("option");
+      option.value = book.code;
+      option.textContent = book.name;
+      option.dataset.chapters = String(book.chapterCount);
+      option.dataset.testament = book.testament;
+      option.selected = book.code === bookToUse;
+      bookSelect.appendChild(option);
+    }
+    return bookToUse;
   }
 
   function randomChapterPath(game) {
     const difficulty = difficultySelect?.value || "medium";
-    const pool = safeBooks.filter((entry) => Number(entry.chapterCount) > 0);
+    const pool = filteredBooks().filter((entry) => Number(entry.chapterCount) > 0);
     const chosenBook = pool[Math.floor(Math.random() * pool.length)] || pool[0];
     if (!chosenBook) {
       return `/`;
@@ -181,12 +186,16 @@ const firstBook = books[0];
     bookSelect.addEventListener("change", () => {
       const selected = safeBooks.find((entry) => entry.code === bookSelect.value);
       buildChapterOptions(selected?.chapterCount ?? 1, 1);
-      syncLinks();
     });
   }
 
-  if (chapterSelect) {
-    chapterSelect.addEventListener("change", syncLinks);
+  if (testamentSelect) {
+    testamentSelect.addEventListener("change", () => {
+      const bookToUse = buildBookOptions(bookSelect && "value" in bookSelect ? bookSelect.value : "");
+      const selected = safeBooks.find((entry) => entry.code === bookToUse);
+      buildChapterOptions(selected?.chapterCount ?? 1, 1);
+      syncQuickStartLinks();
+    });
   }
 
   if (difficultySelect) {
@@ -196,7 +205,6 @@ const firstBook = books[0];
       } catch {
         // Ignore storage errors; links still sync in-memory.
       }
-      syncLinks();
       syncQuickStartLinks();
     });
   }
@@ -231,6 +239,5 @@ const firstBook = books[0];
     }
   }
 
-  syncLinks();
   syncQuickStartLinks();
 </script>
