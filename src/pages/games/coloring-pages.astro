@@ -1,30 +1,82 @@
 ---
 import Main from "@/layouts/Main.astro";
 import GameNav from "@/components/GameNav.astro";
-import coloringPages from "@/data/coloringPages.json";
+import { coloringPages } from "@/data/coloringPages";
+
+const visibleColoringPages = coloringPages.filter((page) => page.display !== false);
 ---
 
 <Main title="Coloring Pages | Bible Games">
   <GameNav />
 
   <section class="panel game-theme theme-coloring-pages">
-    <h1 class="title">Coloring Pages - COMING SOON:  UNDER CONSTRUCTION</h1>
+    <h1 class="title">Coloring Pages</h1>
     <p class="subtitle">
-      Printable Bible coloring pages for home, church, and Sunday school.
+      Printable Bible coloring pages for home, church, and Sunday school. Tap or click an image, then print from your browser. Make sure to check Landscape or Portrait as needed.
     </p>
 
-    <div class="button-row">
-      {coloringPages.map((page) => (
-        <div class="panel" style="padding:0.75rem;">
-          <h2>{page.title}</h2>
-          <p class="muted">{page.bibleReference}</p>
-          <p>{page.description}</p>
-
-          <a class="btn" href={page.pdfPath} download>
-            Download PDF
+    <div class="coloring-grid">
+      {visibleColoringPages.map((page) => (
+        <article class="coloring-card">
+          <a class="coloring-preview-link" href={page.printablePath} aria-label={`Open ${page.title} coloring page`}>
+            <img class="coloring-preview" src={page.previewPath} alt="" loading="lazy" />
           </a>
-        </div>
+
+          <div class="coloring-card-body">
+            <h2>{page.title}{page.level ? ` (${page.level})` : ""}</h2>
+            <p class="muted">{page.bibleReference}</p>
+            <p>{page.description}</p>
+
+          </div>
+        </article>
       ))}
     </div>
   </section>
 </Main>
+
+<style>
+  .coloring-grid {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 0.9rem;
+  }
+
+  .coloring-card {
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .coloring-preview-link {
+    display: block;
+    color: inherit;
+  }
+
+  .coloring-preview {
+    display: block;
+    width: 100%;
+    aspect-ratio: 8.5 / 11;
+    object-fit: cover;
+    background: #fff;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .coloring-card-body {
+    padding: 0.85rem;
+  }
+
+  .coloring-card h2 {
+    margin: 0;
+    font-size: 1.18rem;
+  }
+
+  .coloring-card p {
+    margin: 0.45rem 0;
+  }
+
+  .coloring-card .btn {
+    margin-top: 0.4rem;
+  }
+</style>
