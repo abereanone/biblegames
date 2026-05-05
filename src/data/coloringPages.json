@@ -90,6 +90,15 @@
     "level": "medium"
   },
   {
+    "title": "I Lack Nothing",
+    "bibleReference": "Psalm 23:1",
+    "description": "A printable coloring page about trusting the Lord as our gracious shepherd/provider.",
+    "printablePath": "/coloring-pages/Ps23hard.png",
+    "previewPath": "/coloring-pages/Ps23hard.png",
+    "display": true,
+    "level": "hard"
+  },
+  {
     "title": "Daniel in the Lions' Den",
     "bibleReference": "Daniel 6",
     "description": "A printable coloring page about God protecting Daniel in the lions' den.",

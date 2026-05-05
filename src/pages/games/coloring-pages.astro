@@ -2,6 +2,7 @@
 import Main from "@/layouts/Main.astro";
 import GameNav from "@/components/GameNav.astro";
 import { coloringPages } from "@/data/coloringPages";
+import { DIFFICULTIES, DIFFICULTY_LABELS } from "@/lib/games/difficulty";
 
 const visibleColoringPages = coloringPages.filter((page) => page.display !== false);
 ---
@@ -15,9 +16,17 @@ const visibleColoringPages = coloringPages.filter((page) => page.display !== fal
       Printable Bible coloring pages for home, church, and Sunday school. Tap or click an image, then print from your browser. Make sure to check Landscape or Portrait as needed.
     </p>
 
+    <div class="coloring-filter no-print" aria-label="Filter coloring pages by difficulty">
+      {DIFFICULTIES.map((difficulty) => (
+        <button type="button" class="btn alt" data-coloring-filter={difficulty}>
+          {DIFFICULTY_LABELS[difficulty]}
+        </button>
+      ))}
+    </div>
+
     <div class="coloring-grid">
       {visibleColoringPages.map((page) => (
-        <article class="coloring-card">
+        <article class="coloring-card" data-coloring-level={page.level ?? ""}>
           <a class="coloring-preview-link" href={page.printablePath} aria-label={`Open ${page.title} coloring page`}>
             <img class="coloring-preview" src={page.previewPath} alt="" loading="lazy" />
           </a>
@@ -34,7 +43,40 @@ const visibleColoringPages = coloringPages.filter((page) => page.display !== fal
   </section>
 </Main>
 
+<script>
+  const filterButtons = document.querySelectorAll("[data-coloring-filter]");
+  const coloringCards = document.querySelectorAll("[data-coloring-level]");
+
+  function setColoringFilter(level) {
+    for (const button of filterButtons) {
+      button.classList.toggle("alt", button.getAttribute("data-coloring-filter") !== level);
+      button.setAttribute("aria-pressed", String(level !== "" && button.getAttribute("data-coloring-filter") === level));
+    }
+
+    for (const card of coloringCards) {
+      card.hidden = level !== "" && card.getAttribute("data-coloring-level") !== level;
+    }
+  }
+
+  for (const button of filterButtons) {
+    button.addEventListener("click", () => {
+      const level = button.getAttribute("data-coloring-filter") || "";
+      const isActive = button.getAttribute("aria-pressed") === "true";
+      setColoringFilter(isActive ? "" : level);
+    });
+  }
+
+  setColoringFilter("");
+</script>
+
 <style>
+  .coloring-filter {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.65rem;
+  }
+
   .coloring-grid {
     margin-top: 1rem;
     display: grid;
@@ -78,5 +120,11 @@ const visibleColoringPages = coloringPages.filter((page) => page.display !== fal
 
   .coloring-card .btn {
     margin-top: 0.4rem;
+  }
+
+  @media (max-width: 720px) {
+    .coloring-filter {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
