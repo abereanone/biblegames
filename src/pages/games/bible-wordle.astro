@@ -112,11 +112,19 @@ const firstBook = wordleData.books[0];
 <script is:inline define:vars={{ books: wordleData.books, verses: wordleData.verses, encouragementMessages }}>
   const MAX_GUESSES = 6;
   const PUZZLE_EPOCH_UTC = Date.UTC(2026, 0, 1);
+  const WEIGHTED_SELECTION_START_PUZZLE = 126;
   const DAY_MS = 24 * 60 * 60 * 1000;
   const STATS_ENABLED_KEY = "bg:bible-wordle:stats-enabled";
   const STATS_KEY = "bg:bible-wordle:stats";
   const bwBooks = Array.isArray(books) ? books : [];
   const bwVerses = Array.isArray(verses) ? verses : [];
+  const versesByBook = new Map();
+  for (const verse of bwVerses) {
+    const bookVerses = versesByBook.get(verse.bookCode) || [];
+    bookVerses.push(verse);
+    versesByBook.set(verse.bookCode, bookVerses);
+  }
+  const selectableBooks = bwBooks.filter((book) => (versesByBook.get(book.code) || []).length > 0);
   const puzzleTitle = document.getElementById("bw-puzzle-title");
   const puzzleInput = document.getElementById("bw-puzzle-input");
   const openPuzzleButton = document.getElementById("bw-open-puzzle");
@@ -180,10 +188,49 @@ const firstBook = wordleData.books[0];
     return String(messages[index] || `Solved in ${count}.`);
   }
 
+  function bookSelectionWeight(book) {
+    return book?.testament === "nt" || book?.code === "psa" || book?.code === "pro" ? 3 : 1;
+  }
+
+  function pickWeightedBook(puzzleNumber) {
+    if (!selectableBooks.length) {
+      return null;
+    }
+
+    const totalWeight = selectableBooks.reduce((sum, book) => sum + bookSelectionWeight(book), 0);
+    let target = hashNumber(`bible-wordle-book-v2|${puzzleNumber}`) % totalWeight;
+
+    for (const book of selectableBooks) {
+      target -= bookSelectionWeight(book);
+      if (target < 0) {
+        return book;
+      }
+    }
+
+    return selectableBooks[0];
+  }
+
+  function pickWeightedBookVerse(puzzleNumber) {
+    const book = pickWeightedBook(puzzleNumber);
+    const bookVerses = book ? versesByBook.get(book.code) || [] : [];
+
+    if (!bookVerses.length) {
+      return bwVerses[0] ?? null;
+    }
+
+    const verseIndex = hashNumber(`bible-wordle-verse-v2|${puzzleNumber}|${book.code}`) % bookVerses.length;
+    return bookVerses[verseIndex] ?? bookVerses[0];
+  }
+
   function pickVerse(puzzleNumber) {
     if (!bwVerses.length) {
       return null;
     }
+
+    if (puzzleNumber >= WEIGHTED_SELECTION_START_PUZZLE) {
+      return pickWeightedBookVerse(puzzleNumber);
+    }
+
     return bwVerses[hashNumber(`bible-wordle|${puzzleNumber}`) % bwVerses.length] ?? bwVerses[0];
   }
 
