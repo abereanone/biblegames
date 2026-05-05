@@ -18,7 +18,11 @@ const verseQuery = verseKey ? `?verse=${encodeURIComponent(verseKey)}` : "";
 ---
 
 <section class="panel no-print game-nav-panel">
-  <div class="button-row">
+  <button class="game-nav-toggle" type="button" aria-expanded="false">
+    Show Games
+  </button>
+
+  <div class="button-row game-nav-links">
     <a class="btn game-btn" data-game="word-search" href={`/games/word-search/${chapterPath}`}>
       Word Search
     </a>
@@ -36,3 +40,19 @@ const verseQuery = verseKey ? `?verse=${encodeURIComponent(verseKey)}` : "";
     </a>
   </div>
 </section>
+
+<script>
+  for (const panel of document.querySelectorAll(".game-nav-panel")) {
+    const toggle = panel.querySelector(".game-nav-toggle");
+
+    if (!(toggle instanceof HTMLButtonElement)) {
+      continue;
+    }
+
+    toggle.addEventListener("click", () => {
+      const isOpen = panel.classList.toggle("is-open");
+      toggle.setAttribute("aria-expanded", String(isOpen));
+      toggle.textContent = isOpen ? "Hide Games" : "Show All Games";
+    });
+  }
+</script>

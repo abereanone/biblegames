@@ -27,7 +27,7 @@ const visibleColoringPages = coloringPages.filter((page) => page.display !== fal
     <div class="coloring-grid">
       {visibleColoringPages.map((page) => (
         <article class="coloring-card" data-coloring-level={page.level ?? ""}>
-          <a class="coloring-preview-link" href={page.printablePath} aria-label={`Open ${page.title} coloring page`}>
+          <a class="coloring-preview-link" target="_blank" href={page.printablePath} aria-label={`Open ${page.title} coloring page`}>
             <img class="coloring-preview" src={page.previewPath} alt="" loading="lazy" />
           </a>
 

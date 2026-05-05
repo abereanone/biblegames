@@ -99,6 +99,33 @@
     "level": "hard"
   },
   {
+    "title": "Belt of Truth",
+    "bibleReference": "Ephesians 6:14",
+    "description": "A printable coloring page about reminding us to put on the belt of truth as part of the armor of God.",
+    "printablePath": "/coloring-pages/Eph614.png",
+    "previewPath": "/coloring-pages/Eph614.png",
+    "display": true,
+    "level": "easy"
+  },
+  {
+    "title": "Belt of Truth",
+    "bibleReference": "Ephesians 6:14",
+    "description": "A printable coloring page about reminding us to put on the belt of truth as part of the armor of God.",
+    "printablePath": "/coloring-pages/Eph614med.png",
+    "previewPath": "/coloring-pages/Eph614med.png",
+    "display": true,
+    "level": "medium"
+  },
+  {
+    "title": "Belt of Truth",
+    "bibleReference": "Ephesians 6:14",
+    "description": "A printable coloring page about reminding us to put on the belt of truth as part of the armor of God.",
+    "printablePath": "/coloring-pages/Eph614hard.png",
+    "previewPath": "/coloring-pages/Eph614hard.png",
+    "display": true,
+    "level": "hard"
+  },
+  {
     "title": "Daniel in the Lions' Den",
     "bibleReference": "Daniel 6",
     "description": "A printable coloring page about God protecting Daniel in the lions' den.",

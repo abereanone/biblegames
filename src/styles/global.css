@@ -127,6 +127,13 @@ a:focus-visible {
   .brand-text {
     font-size: 1.45rem;
   }
+
+  .brand-clean,
+  .brand-dot {
+    -webkit-text-stroke: 0;
+    text-stroke: 0;
+    text-shadow: none;
+  }
 }
 
 .shell {
@@ -263,6 +270,10 @@ body.brand-bible-wordle {
 
 .game-nav-panel {
   margin-bottom: 0.75rem;
+}
+
+.game-nav-toggle {
+  display: none;
 }
 
 .title {
@@ -486,6 +497,22 @@ button,
 }
 
 @media (max-width: 760px) {
+  .game-nav-toggle {
+    display: block;
+    width: 100%;
+    background: #fff;
+    color: var(--accent-strong);
+    border-color: #b8c4ad;
+  }
+
+  .game-nav-panel .game-nav-links {
+    display: none;
+  }
+
+  .game-nav-panel.is-open .game-nav-links {
+    display: grid;
+  }
+
   .game-nav-panel .button-row {
     grid-template-columns: 1fr;
   }
@@ -1207,4 +1234,3 @@ button:disabled {
   background: #7b5bd6;
   border-color: #7b5bd6;
 }
-
