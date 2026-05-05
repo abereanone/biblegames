@@ -4,6 +4,7 @@ type Props = {
   bookCode?: string;
   chapter?: number | string;
   verseKey?: string;
+  collapsedOnMobile?: boolean;
 };
 
 const {
@@ -11,13 +12,14 @@ const {
   bookCode = "gen",
   chapter = 1,
   verseKey = "",
+  collapsedOnMobile = true,
 } = Astro.props;
 
 const chapterPath = `${difficulty}/${bookCode}/${chapter}`;
 const verseQuery = verseKey ? `?verse=${encodeURIComponent(verseKey)}` : "";
 ---
 
-<section class="panel no-print game-nav-panel">
+<section class:list={["panel", "no-print", "game-nav-panel", { "mobile-collapsible": collapsedOnMobile, "is-open": !collapsedOnMobile }]}>
   <button class="game-nav-toggle" type="button" aria-expanded="false">
     Show Games
   </button>
@@ -52,7 +54,7 @@ const verseQuery = verseKey ? `?verse=${encodeURIComponent(verseKey)}` : "";
     toggle.addEventListener("click", () => {
       const isOpen = panel.classList.toggle("is-open");
       toggle.setAttribute("aria-expanded", String(isOpen));
-      toggle.textContent = isOpen ? "Hide Games" : "Show All Games";
+      toggle.textContent = isOpen ? "Hide Games" : "Show Games";
     });
   }
 </script>

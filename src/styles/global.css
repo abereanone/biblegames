@@ -497,7 +497,7 @@ button,
 }
 
 @media (max-width: 760px) {
-  .game-nav-toggle {
+  .game-nav-panel.mobile-collapsible .game-nav-toggle {
     display: block;
     width: 100%;
     background: #fff;
@@ -505,7 +505,7 @@ button,
     border-color: #b8c4ad;
   }
 
-  .game-nav-panel .game-nav-links {
+  .game-nav-panel.mobile-collapsible .game-nav-links {
     display: none;
   }
 
