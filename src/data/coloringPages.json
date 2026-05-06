@@ -61,14 +61,5 @@
     "previewPath": "/coloring-pages/Pro318hard.png",
     "display": true,
     "level": "hard"
-  },
-  {
-    "title": "PlaceHolder - leave here so to ignore trailing comma problem",
-    "bibleReference": "",
-    "description": "",
-    "printablePath": "",
-    "previewPath": "",
-    "display": false,
-    "level": "easy"
   }
 ]
