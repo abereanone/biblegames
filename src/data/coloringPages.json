@@ -1,107 +1,35 @@
 [
   {
-    "title": "Creation",
-    "bibleReference": "Genesis 1",
-    "description": "A printable coloring page about God creating the heavens and the earth.",
-    "printablePath": "/coloring-pages/comingSoon.png",
-    "previewPath": "/coloring-pages/comingSoon.png",
-    "display": false,
-    "level": "easy"
-  },
-  {
-    "title": "Noah's Ark",
-    "bibleReference": "Genesis 6-9",
-    "description": "A printable coloring page about Noah, the ark, and God's promise.",
-    "printablePath": "/coloring-pages/comingSoon.png",
-    "previewPath": "/coloring-pages/comingSoon.png",
-    "display": false,
-    "level": "easy"
-  },
-  {
-    "title": "Abraham and Isaac",
-    "bibleReference": "Genesis 22",
-    "description": "A printable coloring page about Abraham trusting God and God's provision.",
-    "printablePath": "/coloring-pages/comingSoon.png",
-    "previewPath": "/coloring-pages/comingSoon.png",
-    "display": false,
-    "level": "easy"
-  },
-  {
-    "title": "Joseph and His Coat",
-    "bibleReference": "Genesis 37",
-    "description": "A printable coloring page about Joseph and the coat his father gave him.",
-    "printablePath": "/coloring-pages/comingSoon.png",
-    "previewPath": "/coloring-pages/comingSoon.png",
-    "display": false,
-    "level": "easy"
-  },
-  {
-    "title": "Moses and the Burning Bush",
-    "bibleReference": "Exodus 3",
-    "description": "A printable coloring page about God speaking to Moses from the burning bush.",
-    "printablePath": "/coloring-pages/comingSoon.png",
-    "previewPath": "/coloring-pages/comingSoon.png",
-    "display": false,
-    "level": "easy"
-  },
-  {
-    "title": "Crossing the Red Sea",
-    "bibleReference": "Exodus 14",
-    "description": "A printable coloring page about God delivering Israel through the Red Sea.",
-    "printablePath": "/coloring-pages/comingSoon.png",
-    "previewPath": "/coloring-pages/comingSoon.png",
-    "display": false,
-    "level": "easy"
-  },
-  {
-    "title": "Joshua and the Battle of Jericho",
-    "bibleReference": "Joshua 6",
-    "description": "A printable coloring page about the walls of Jericho falling after Israel obeyed God.",
-    "printablePath": "/coloring-pages/comingSoon.png",
-    "previewPath": "/coloring-pages/comingSoon.png",
-    "display": false,
-    "level": "easy"
-  },
-  {
-    "title": "David and Goliath",
-    "bibleReference": "1 Samuel 17",
-    "description": "A printable coloring page about David trusting the Lord against Goliath.",
-    "printablePath": "/coloring-pages/comingSoon.png",
-    "previewPath": "/coloring-pages/comingSoon.png",
-    "display": false,
-    "level": "easy"
-  },
-  {
     "title": "I Lack Nothing",
     "bibleReference": "Psalm 23:1",
-    "description": "A printable coloring page about trusting the Lord as our gracious shepherd/provider.",
-    "printablePath": "/coloring-pages/Ps23.png",
-    "previewPath": "/coloring-pages/Ps23.png",
+    "description": "A reminder to trust the Lord as our gracious shepherd/provider.",
+    "printablePath": "/coloring-pages/Psa23.png",
+    "previewPath": "/coloring-pages/Psa23.png",
     "display": true,
     "level": "easy"
   },
   {
     "title": "I Lack Nothing",
     "bibleReference": "Psalm 23:1",
-    "description": "A printable coloring page about trusting the Lord as our gracious shepherd/provider.",
-    "printablePath": "/coloring-pages/Ps23med.png",
-    "previewPath": "/coloring-pages/Ps23med.png",
+    "description": "A reminder to trust the Lord as our gracious shepherd/provider.",
+    "printablePath": "/coloring-pages/Psa23med.png",
+    "previewPath": "/coloring-pages/Psa23med.png",
     "display": true,
     "level": "medium"
   },
   {
     "title": "I Lack Nothing",
     "bibleReference": "Psalm 23:1",
-    "description": "A printable coloring page about trusting the Lord as our gracious shepherd/provider.",
-    "printablePath": "/coloring-pages/Ps23hard.png",
-    "previewPath": "/coloring-pages/Ps23hard.png",
+    "description": "A reminder to trust the Lord as our gracious shepherd/provider.",
+    "printablePath": "/coloring-pages/Psa23hard.png",
+    "previewPath": "/coloring-pages/Psa23hard.png",
     "display": true,
     "level": "hard"
   },
   {
     "title": "Belt of Truth",
     "bibleReference": "Ephesians 6:14",
-    "description": "A printable coloring page about reminding us to put on the belt of truth as part of the armor of God.",
+    "description": "A reminder about putting on the belt of truth as part of the armor of God.",
     "printablePath": "/coloring-pages/Eph614.png",
     "previewPath": "/coloring-pages/Eph614.png",
     "display": true,
@@ -110,7 +38,7 @@
   {
     "title": "Belt of Truth",
     "bibleReference": "Ephesians 6:14",
-    "description": "A printable coloring page about reminding us to put on the belt of truth as part of the armor of God.",
+    "description": "A reminder about putting on the belt of truth as part of the armor of God.",
     "printablePath": "/coloring-pages/Eph614med.png",
     "previewPath": "/coloring-pages/Eph614med.png",
     "display": true,
@@ -119,36 +47,27 @@
   {
     "title": "Belt of Truth",
     "bibleReference": "Ephesians 6:14",
-    "description": "A printable coloring page about reminding us to put on the belt of truth as part of the armor of God.",
+    "description": "A reminder about putting on the belt of truth as part of the armor of God.",
     "printablePath": "/coloring-pages/Eph614hard.png",
     "previewPath": "/coloring-pages/Eph614hard.png",
     "display": true,
     "level": "hard"
   },
   {
-    "title": "Daniel in the Lions' Den",
-    "bibleReference": "Daniel 6",
-    "description": "A printable coloring page about God protecting Daniel in the lions' den.",
-    "printablePath": "/coloring-pages/comingSoon.png",
-    "previewPath": "/coloring-pages/comingSoon.png",
-    "display": false,
-    "level": "easy"
+    "title": "Open Your Mouth",
+    "bibleReference": "Proverbs 31:8-9",
+    "description": "A reminder about speaking up for those who cannot speak for themselves.",
+    "printablePath": "/coloring-pages/Pro318hard.png",
+    "previewPath": "/coloring-pages/Pro318hard.png",
+    "display": true,
+    "level": "hard"
   },
   {
-    "title": "Jonah and the Great Fish",
-    "bibleReference": "Jonah 1-2",
-    "description": "A printable coloring page about Jonah, the storm, and the great fish.",
-    "printablePath": "/coloring-pages/comingSoon.png",
-    "previewPath": "/coloring-pages/comingSoon.png",
-    "display": false,
-    "level": "easy"
-  },
-  {
-    "title": "The Empty Tomb",
-    "bibleReference": "Matthew 28",
-    "description": "A printable coloring page celebrating Jesus' resurrection.",
-    "printablePath": "/coloring-pages/comingSoon.png",
-    "previewPath": "/coloring-pages/comingSoon.png",
+    "title": "PlaceHolder - leave here so to ignore trailing comma problem",
+    "bibleReference": "",
+    "description": "",
+    "printablePath": "",
+    "previewPath": "",
     "display": false,
     "level": "easy"
   }
