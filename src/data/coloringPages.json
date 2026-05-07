@@ -57,10 +57,10 @@
     "title": "Open Your Mouth",
     "bibleReference": "Proverbs 31:8-9",
     "description": "A reminder about speaking up for those who cannot speak for themselves.",
-    "printablePath": "/coloring-pages/Pro318hard.png",
-    "previewPath": "/coloring-pages/Pro318hard.png",
+    "printablePath": "/coloring-pages/Pro318.png",
+    "previewPath": "/coloring-pages/Pro318.png",
     "display": true,
-    "level": "hard"
+    "level": "easy"
   },
   {
     "title": "Open Your Mouth",
@@ -75,9 +75,9 @@
     "title": "Open Your Mouth",
     "bibleReference": "Proverbs 31:8-9",
     "description": "A reminder about speaking up for those who cannot speak for themselves.",
-    "printablePath": "/coloring-pages/Pro318.png",
-    "previewPath": "/coloring-pages/Pro318.png",
+    "printablePath": "/coloring-pages/Pro318hard.png",
+    "previewPath": "/coloring-pages/Pro318hard.png",
     "display": true,
-    "level": "easy"
+    "level": "hard"
   }
 ]
