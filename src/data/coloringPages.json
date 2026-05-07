@@ -1,83 +1,26 @@
 [
   {
     "title": "I Lack Nothing",
-    "bibleReference": "Psalm 23:1",
+    "ref": "Psalm 23:1",
     "description": "A reminder to trust the Lord as our gracious shepherd/provider.",
-    "printablePath": "/coloring-pages/Psa23.png",
-    "previewPath": "/coloring-pages/Psa23.png",
-    "display": true,
-    "level": "easy"
-  },
-  {
-    "title": "I Lack Nothing",
-    "bibleReference": "Psalm 23:1",
-    "description": "A reminder to trust the Lord as our gracious shepherd/provider.",
-    "printablePath": "/coloring-pages/Psa23med.png",
-    "previewPath": "/coloring-pages/Psa23med.png",
-    "display": true,
-    "level": "medium"
-  },
-  {
-    "title": "I Lack Nothing",
-    "bibleReference": "Psalm 23:1",
-    "description": "A reminder to trust the Lord as our gracious shepherd/provider.",
-    "printablePath": "/coloring-pages/Psa23hard.png",
-    "previewPath": "/coloring-pages/Psa23hard.png",
-    "display": true,
-    "level": "hard"
+    "easyPath": "/coloring-pages/Psa23.png",
+    "mediumPath": "/coloring-pages/Psa23med.png",
+    "hardPath": "/coloring-pages/Psa23hard.png"
   },
   {
     "title": "Belt of Truth",
-    "bibleReference": "Ephesians 6:14",
+    "ref": "Ephesians 6:14",
     "description": "A reminder about putting on the belt of truth as part of the armor of God.",
-    "printablePath": "/coloring-pages/Eph614.png",
-    "previewPath": "/coloring-pages/Eph614.png",
-    "display": true,
-    "level": "easy"
-  },
-  {
-    "title": "Belt of Truth",
-    "bibleReference": "Ephesians 6:14",
-    "description": "A reminder about putting on the belt of truth as part of the armor of God.",
-    "printablePath": "/coloring-pages/Eph614med.png",
-    "previewPath": "/coloring-pages/Eph614med.png",
-    "display": true,
-    "level": "medium"
-  },
-  {
-    "title": "Belt of Truth",
-    "bibleReference": "Ephesians 6:14",
-    "description": "A reminder about putting on the belt of truth as part of the armor of God.",
-    "printablePath": "/coloring-pages/Eph614hard.png",
-    "previewPath": "/coloring-pages/Eph614hard.png",
-    "display": true,
-    "level": "hard"
+    "easyPath": "/coloring-pages/Eph614.png",
+    "mediumPath": "/coloring-pages/Eph614med.png",
+    "hardPath": "/coloring-pages/Eph614hard.png"
   },
   {
     "title": "Open Your Mouth",
-    "bibleReference": "Proverbs 31:8-9",
+    "ref": "Proverbs 31:8-9",
     "description": "A reminder about speaking up for those who cannot speak for themselves.",
-    "printablePath": "/coloring-pages/Pro318.png",
-    "previewPath": "/coloring-pages/Pro318.png",
-    "display": true,
-    "level": "easy"
-  },
-  {
-    "title": "Open Your Mouth",
-    "bibleReference": "Proverbs 31:8-9",
-    "description": "A reminder about speaking up for those who cannot speak for themselves.",
-    "printablePath": "/coloring-pages/Pro318med.png",
-    "previewPath": "/coloring-pages/Pro318med.png",
-    "display": true,
-    "level": "medium"
-  },
-  {
-    "title": "Open Your Mouth",
-    "bibleReference": "Proverbs 31:8-9",
-    "description": "A reminder about speaking up for those who cannot speak for themselves.",
-    "printablePath": "/coloring-pages/Pro318hard.png",
-    "previewPath": "/coloring-pages/Pro318hard.png",
-    "display": true,
-    "level": "hard"
+    "mediumPath": "/coloring-pages/Pro318med.png",
+    "easyPath": "/coloring-pages/Pro318.png",
+    "hardPath": "/coloring-pages/Pro318hard.png"
   }
 ]

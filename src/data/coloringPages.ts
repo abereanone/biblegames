@@ -2,12 +2,11 @@ import coloringPagesData from "./coloringPages.json";
 
 export type ColoringPage = {
   title: string;
-  bibleReference: string;
+  ref: string;
   description: string;
-  printablePath: string;
-  previewPath: string;
-  display?: boolean;
-  level?: string;
+  easyPath: string;
+  mediumPath: string;
+  hardPath: string;
 };
 
 export const coloringPages = coloringPagesData as ColoringPage[];

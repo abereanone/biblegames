@@ -4,7 +4,29 @@ import GameNav from "@/components/GameNav.astro";
 import { coloringPages } from "@/data/coloringPages";
 import { DIFFICULTIES, DIFFICULTY_LABELS } from "@/lib/games/difficulty";
 
-const visibleColoringPages = coloringPages.filter((page) => page.display !== false);
+const pathByDifficulty = {
+  easy: "easyPath",
+  medium: "mediumPath",
+  hard: "hardPath",
+} as const;
+
+const coloringCards = coloringPages.flatMap((page) =>
+  DIFFICULTIES.flatMap((difficulty) => {
+    const path = page[pathByDifficulty[difficulty]];
+
+    if (path === "") {
+      return [];
+    }
+
+    return [{
+      title: page.title,
+      ref: page.ref,
+      description: page.description,
+      level: difficulty,
+      path,
+    }];
+  }),
+);
 ---
 
 <Main title="Coloring Pages | Bible Games">
@@ -16,6 +38,16 @@ const visibleColoringPages = coloringPages.filter((page) => page.display !== fal
       Printable Bible coloring pages for home, church, and Sunday school. Tap or click an image, then print from your browser. Make sure to check Landscape or Portrait as needed. Tap a difficulty level to filter, or tap it again to show all.
     </p>
 
+    <label class="coloring-ref-picker no-print">
+      <span>Bible reference</span>
+      <select data-coloring-ref>
+        <option value="">All references</option>
+        {coloringPages.map((page) => (
+          <option value={page.ref}>{page.ref}</option>
+        ))}
+      </select>
+    </label>
+
     <div class="coloring-filter no-print" aria-label="Filter coloring pages by difficulty">
       {DIFFICULTIES.map((difficulty) => (
         <button type="button" class="btn alt" data-coloring-filter={difficulty}>
@@ -25,15 +57,15 @@ const visibleColoringPages = coloringPages.filter((page) => page.display !== fal
     </div>
 
     <div class="coloring-grid">
-      {visibleColoringPages.map((page) => (
-        <article class="coloring-card" data-coloring-level={page.level ?? ""}>
-          <a class="coloring-preview-link" target="_blank" href={page.printablePath} aria-label={`Open ${page.title} coloring page`}>
-            <img class="coloring-preview" src={page.previewPath} alt="" loading="lazy" />
+      {coloringCards.map((page) => (
+        <article class="coloring-card" data-coloring-level={page.level} data-coloring-card-ref={page.ref}>
+          <a class="coloring-preview-link" target="_blank" href={page.path} aria-label={`Open ${page.title} coloring page`}>
+            <img class="coloring-preview" src={page.path} alt="" loading="lazy" />
           </a>
 
           <div class="coloring-card-body">
-            <h2>{page.title}{page.level ? ` (${page.level})` : ""}</h2>
-            <p class="muted">{page.bibleReference}</p>
+            <h2>{page.title} ({DIFFICULTY_LABELS[page.level]})</h2>
+            <p class="muted">{page.ref}</p>
             <p>{page.description}</p>
 
           </div>
@@ -45,16 +77,21 @@ const visibleColoringPages = coloringPages.filter((page) => page.display !== fal
 
 <script>
   const filterButtons = document.querySelectorAll("[data-coloring-filter]");
+  const refSelect = document.querySelector("[data-coloring-ref]");
   const coloringCards = document.querySelectorAll("[data-coloring-level]");
+  let selectedLevel = "";
+  let selectedRef = "";
 
-  function setColoringFilter(level) {
+  function applyColoringFilters() {
     for (const button of filterButtons) {
-      button.classList.toggle("alt", button.getAttribute("data-coloring-filter") !== level);
-      button.setAttribute("aria-pressed", String(level !== "" && button.getAttribute("data-coloring-filter") === level));
+      button.classList.toggle("alt", button.getAttribute("data-coloring-filter") !== selectedLevel);
+      button.setAttribute("aria-pressed", String(selectedLevel !== "" && button.getAttribute("data-coloring-filter") === selectedLevel));
     }
 
     for (const card of coloringCards) {
-      card.hidden = level !== "" && card.getAttribute("data-coloring-level") !== level;
+      const matchesLevel = selectedLevel === "" || card.getAttribute("data-coloring-level") === selectedLevel;
+      const matchesRef = selectedRef === "" || card.getAttribute("data-coloring-card-ref") === selectedRef;
+      card.hidden = !matchesLevel || !matchesRef;
     }
   }
 
@@ -62,14 +99,38 @@ const visibleColoringPages = coloringPages.filter((page) => page.display !== fal
     button.addEventListener("click", () => {
       const level = button.getAttribute("data-coloring-filter") || "";
       const isActive = button.getAttribute("aria-pressed") === "true";
-      setColoringFilter(isActive ? "" : level);
+      selectedLevel = isActive ? "" : level;
+      applyColoringFilters();
     });
   }
 
-  setColoringFilter("");
+  refSelect?.addEventListener("change", (event) => {
+    selectedRef = event.currentTarget instanceof HTMLSelectElement ? event.currentTarget.value : "";
+    applyColoringFilters();
+  });
+
+  applyColoringFilters();
 </script>
 
 <style>
+  .coloring-ref-picker {
+    margin-top: 1rem;
+    display: grid;
+    gap: 0.35rem;
+    max-width: 22rem;
+    font-weight: 700;
+  }
+
+  .coloring-ref-picker select {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    color: inherit;
+    font: inherit;
+    padding: 0.65rem 0.75rem;
+  }
+
   .coloring-filter {
     margin-top: 1rem;
     display: grid;
