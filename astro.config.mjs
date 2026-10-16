@@ -29,6 +29,9 @@ const SITEMAP_URLS = new Set([
 
 export default defineConfig({
   site: "https://biblegames.church",
+  // Astro 7 defaults to "jsx", which drops the line break between text and an inline
+  // tag ("enjoy<a>x</a>and" renders as "enjoyxand"). true keeps the Astro 6 behaviour.
+  compressHTML: true,
   integrations: [sitemap({ filter: (page) => SITEMAP_URLS.has(page) })],
   vite: {
     resolve: {
