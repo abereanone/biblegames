@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node scripts/go-links.mjs dist --base /go/ --own biblegames.church,www.biblegames.church",
     "preview": "astro preview"
   },
   "dependencies": {
